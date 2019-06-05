@@ -5,7 +5,7 @@
 
 Use this if want to compile down to a single executable. Runtime linking is always preferred and you lose access to the validation layers if you use `ash-molten`.
 
-```
+```Rust
 let entry = ash_molten::MoltenEntry::load().expect("Unable to load Molten");
 let app_name = CString::new("Hello Static Molten").unwrap();
 
