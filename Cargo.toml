@@ -3,7 +3,11 @@ name = "ash-molten"
 version = "0.1.0"
 authors = ["maik <maik.klein@embark-studios.com>"]
 edition = "2018"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["vulkan", "metal"]
+repository = "https://github.com/EmbarkStudios/ash-molten"
+documentation = "https://docs.rs/ash-molten"
 
 [dependencies]
-
 ash = "0.29"
