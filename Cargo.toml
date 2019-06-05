@@ -1,0 +1,9 @@
+[package]
+name = "ash-molten"
+version = "0.1.0"
+authors = ["maik <maik.klein@embark-studios.com>"]
+edition = "2018"
+
+[dependencies]
+
+ash = "0.29"
