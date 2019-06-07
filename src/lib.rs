@@ -26,7 +26,7 @@ impl MoltenEntry {
     /// function can not fail.
     pub fn load() -> Result<MoltenEntry, ash::LoadingError> {
         let static_fn = vk::StaticFn {
-            get_instance_proc_addr: get_instance_proc_addr,
+            get_instance_proc_addr,
         };
 
         let entry_fn_1_0 = vk::EntryFnV1_0::load(|name| unsafe {
