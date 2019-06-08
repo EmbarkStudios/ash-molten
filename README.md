@@ -30,6 +30,7 @@ let instance = entry.create_instance(&create_info, None).expect("Instance");
 let devices = instance.enumerate_physical_devices();
 println!("{:?}", devices);
 ```
+You can run the example with `cargo run`.
 
 ## How does it work?
 
