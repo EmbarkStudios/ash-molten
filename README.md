@@ -1,10 +1,19 @@
 # ash-molten
+`ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
+## Why?
 
-`ash-molten` statically links with molten and exposes a new entry point `MoltenEntry`. The function pointers are still fetched at runtime via `getInstanceProcAddr`.
+* You want to compile down to a single binary that doesn't need any enviroment variables to bet set.
 
-Use this if want to compile down to a single executable. Runtime linking is always preferred and you lose access to the validation layers if you use `ash-molten`.
+* You just want to try out [MoltenVK](https://github.com/KhronosGroup/MoltenVK) without needing to setup the SDK.
 
+## Why not?
+
+* [ash](https://github.com/MaikKlein/ash) already supports [MoltenVK](https://github.com/KhronosGroup/MoltenVK) via runtime linking. Runtime linking is the prefered way of using Vulkan because the loader can be updated at anytime without needing to recompile.
+
+* `ash-molten` doesn't have access to the validation layers and thefore can not output any debug information.
+
+## How?
 ```Rust
 let entry = ash_molten::MoltenEntry::load().expect("Unable to load Molten");
 let app_name = CString::new("Hello Static Molten").unwrap();
@@ -21,6 +30,14 @@ let instance = entry.create_instance(&create_info, None).expect("Instance");
 let devices = instance.enumerate_physical_devices();
 println!("{:?}", devices);
 ```
+
+## How does it work?
+
+`ash-molten` links statically with [MoltenVK](https://github.com/KhronosGroup/MoltenVK), it then uses `vkGetInstanceProcAddr` to resolve all the function pointers at runtime.
+
+`ash-molten` ships with a prebuilt library which you can find in [`external`](external/).
+
+[MoltenVK](https://github.com/KhronosGroup/MoltenVK) is built via `build_molten.sh`. [MoltenVK](https://github.com/KhronosGroup/MoltenVK) is added as a git submodule. See the commit hash to find out which version `ash-molten` uses.
 
 ## License
 
