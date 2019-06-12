@@ -1,3 +1,4 @@
+git submodule update --init
 cd MoltenVK
 sh fetchDependencies
 make macos
