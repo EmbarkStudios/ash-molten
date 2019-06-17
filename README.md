@@ -40,6 +40,11 @@ You can run the example with `cargo run`.
 
 [MoltenVK](https://github.com/KhronosGroup/MoltenVK) is built via `build_molten.sh`. [MoltenVK](https://github.com/KhronosGroup/MoltenVK) is added as a git submodule. See the commit hash to find out which version `ash-molten` uses.
 
+### Features
+
+`cargo build` will automatically compile molten for you.
+`cargo build --features external` requires libMoltenVK to be visible. You have to manually set `LD_LIBRARY_PATH`.
+
 ## License
 
 Licensed under either of
