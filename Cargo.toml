@@ -11,3 +11,6 @@ documentation = "https://docs.rs/ash-molten"
 
 [dependencies]
 ash = "0.29"
+
+[features]
+external = []
