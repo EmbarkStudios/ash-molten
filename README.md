@@ -42,8 +42,7 @@ You can run the example with `cargo run`.
 
 ### Features
 
-`cargo build` will automatically compile molten for you.
-`cargo build --features external` requires libMoltenVK to be visible. You have to manually set `LD_LIBRARY_PATH`.
+`cargo build` will automatically compile molten for you. If you want to compile molten yourself, you can use the `external` feature. `cargo build --features external` requires libMoltenVK to be visible. You have to manually set `LD_LIBRARY_PATH`.
 
 ## License
 

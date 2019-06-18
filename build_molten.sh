@@ -1,4 +1,4 @@
-git submodule update --init
+git clone https://github.com/KhronosGroup/MoltenVK.git
 cd MoltenVK
 sh fetchDependencies
 make macos
