@@ -36,13 +36,10 @@ You can run the example with `cargo run`.
 
 `ash-molten` links statically with [MoltenVK](https://github.com/KhronosGroup/MoltenVK), it then uses `vkGetInstanceProcAddr` to resolve all the function pointers at runtime.
 
-`ash-molten` ships with a prebuilt library which you can find in [`external`](external/).
-
-[MoltenVK](https://github.com/KhronosGroup/MoltenVK) is built via `build_molten.sh`. [MoltenVK](https://github.com/KhronosGroup/MoltenVK) is added as a git submodule. See the commit hash to find out which version `ash-molten` uses.
-
 ### Features
 
-`cargo build` will automatically compile molten for you. If you want to compile molten yourself, you can use the `external` feature. `cargo build --features external` requires libMoltenVK to be visible. You have to manually set `LD_LIBRARY_PATH`.
+`cargo build` will clone the newest master of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application. 
+If you want to compile [MoltenVK](https://github.com/KhronosGroup/MoltenVK) yourself, you can use the `external` feature. `cargo build --features external` requires `libMoltenVK` to be visible (`LD_LIBRARY_PATH`).
 
 ## License
 
