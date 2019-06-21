@@ -16,7 +16,7 @@ fn is_external_enabled() -> bool {
         .is_some()
 }
 fn main() {
-    if !(cfg!(target = "macos") || cfg!(target = "ios")) {
+    if !(cfg!(target_os = "macos") || cfg!(target_os = "ios")) {
         panic!("ash-molten can only be built on macOS or of iOS");
     }
     // The 'external' feature was not enabled. Molten will be built automaticaly.
