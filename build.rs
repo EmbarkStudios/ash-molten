@@ -1,4 +1,15 @@
 use std::path::PathBuf;
+// Iterator over target_os cfg flags
+fn target_os() -> impl Iterator<Item = String> {
+    std::env::vars().filter_map(|(flag, val)| {
+        const NAME: &'static str = "CARGO_CFG_TARGET_OS";
+        if flag.starts_with(NAME) {
+            Some(val)
+        } else {
+            None
+        }
+    })
+}
 // Features are not used inside build scripts, so we have to explicitly query them from the
 // enviroment
 fn is_external_enabled() -> bool {
@@ -16,7 +27,11 @@ fn is_external_enabled() -> bool {
         .is_some()
 }
 fn main() {
-    if !(cfg!(target_os = "macos") || cfg!(target_os = "ios")) {
+    let supported_platforms = ["macos", "ios"];
+    let is_mac_or_ios = target_os()
+        .find(|target| supported_platforms.contains(&target.as_str()))
+        .is_some();
+    if !is_mac_or_ios {
         panic!("ash-molten can only be built on macOS or of iOS");
     }
     // The 'external' feature was not enabled. Molten will be built automaticaly.
