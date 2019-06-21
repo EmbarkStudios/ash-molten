@@ -20,9 +20,10 @@ script:
 # Download in a separate step to separate
 # building from fetching dependencies
 - cargo fetch
-# Because rust isn't brutal enough itself
-- cargo clippy -- -D warnings
 # Build everything in a separate step to make a
 # clear distinction between building and testing
 - cargo test --no-run -vv
 - cargo test --no-fail-fast -vv
+# Because rust isn't brutal enough itself
+# We need to run it after the build, otherwise clippy will try to build MoltenVK and travis will time out
+- cargo clippy -- -D warnings
