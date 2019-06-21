@@ -16,10 +16,17 @@ fn is_external_enabled() -> bool {
         .is_some()
 }
 fn main() {
+    if !(cfg!(target = "macos") || cfg!(target = "ios")) {
+        panic!("ash-molten can only be built on macOS or of iOS");
+    }
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
-        std::process::Command::new("bash").arg("build_molten.sh").status().expect("Unable to build molten");
-        let project_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("native");
+        std::process::Command::new("bash")
+            .arg("build_molten.sh")
+            .status()
+            .expect("Unable to build molten");
+        let project_dir =
+            PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("native");
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
     println!("cargo:rustc-link-lib=framework=Metal");
