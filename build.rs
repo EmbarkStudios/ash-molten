@@ -36,10 +36,14 @@ fn main() {
     }
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
-        std::process::Command::new("bash")
+        let mut build = std::process::Command::new("bash")
             .arg("build_molten.sh")
-            .status()
+            .spawn()
             .expect("Unable to build molten");
+        while build.try_wait().unwrap().is_none() {
+            println!("Still building MoltenVK");
+            std::thread::sleep(std::time::Duration::from_secs(30));
+        }
         let project_dir =
             PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("native");
         println!("cargo:rustc-link-search=native={}", project_dir.display());
