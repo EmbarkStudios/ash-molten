@@ -28,6 +28,8 @@ mod mac {
             },
         };
 
+        let checkout_dir = "MoltenVK";
+
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
 
@@ -45,8 +47,9 @@ mod mac {
             }
         });
 
-        let git_status = if Path::new("MoltenVK").exists() {
+        let git_status = if Path::new(checkout_dir).exists() {
             Command::new("git")
+                .current_dir(checkout_dir)
                 .arg("pull")
                 .spawn()
                 .expect("failed to spawn git")
@@ -65,7 +68,7 @@ mod mac {
         assert!(git_status.success(), "failed to clone MoltenVK");
 
         let status = Command::new("sh")
-            .current_dir("MoltenVK")
+            .current_dir(checkout_dir)
             .arg("fetchDependencies")
             .spawn()
             .expect("failed to spawn fetchDependencies")
@@ -96,7 +99,7 @@ mod mac {
 
         let src = {
             let mut pb = PathBuf::new();
-            pb.push("MoltenVK");
+            pb.push(checkout_dir);
             pb.push("Package/Release/MoltenVK");
             pb.push(dir);
             pb.push("static/libMoltenVK.a");
@@ -106,7 +109,8 @@ mod mac {
         let target = {
             let mut pb = PathBuf::new();
             pb.push(target_dir);
-            pb.push(format!("lib{}MoltenVK.a", target_name));
+            pb.push(target_name);
+            pb.push("libMoltenVK.a");
             pb
         };
 
@@ -126,24 +130,21 @@ fn main() {
     use std::path::{Path, PathBuf};
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
-    let target_name = if !is_external_enabled() {
+    if !is_external_enabled() {
         let target_dir = Path::new("native");
 
         let target_name = build_molten(&target_dir);
-        let project_dir = PathBuf::from(
-            std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
-        )
-        .join(target_dir);
-        println!("cargo:rustc-link-search=native={}", project_dir.display());
+        let project_dir = {
+            let mut pb = PathBuf::from(
+                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+            );
+            pb.push(target_dir);
+            pb.push(target_name);
+            pb
+        };
 
-        target_name
-    } else if cfg!(target_os = "macos") {
-        "macos"
-    } else if cfg!(target_os = "ios") {
-        "ios"
-    } else {
-        unreachable!();
-    };
+        println!("cargo:rustc-link-search=native={}", project_dir.display());
+    }
 
     println!("cargo:rustc-link-lib=framework=Metal");
     println!("cargo:rustc-link-lib=framework=AppKit");
@@ -151,7 +152,7 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=IOKit");
     println!("cargo:rustc-link-lib=framework=IOSurface");
     println!("cargo:rustc-link-lib=dylib=c++");
-    println!("cargo:rustc-link-lib=static={}MoltenVK", target_name);
+    println!("cargo:rustc-link-lib=static=MoltenVK");
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
