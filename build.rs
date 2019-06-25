@@ -110,6 +110,9 @@ mod mac {
             let mut pb = PathBuf::new();
             pb.push(target_dir);
             pb.push(target_name);
+
+            std::fs::create_dir_all(&pb).expect("failed to create output directory");
+
             pb.push("libMoltenVK.a");
             pb
         };
