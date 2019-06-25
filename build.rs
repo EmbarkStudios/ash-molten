@@ -22,7 +22,10 @@ mod mac {
     pub(crate) fn build_molten<P: AsRef<Path>>(target_dir: &P) -> &'static str {
         use std::{
             process::Command,
-            sync::{Arc, atomic::{Ordering, AtomicBool}},
+            sync::{
+                atomic::{AtomicBool, Ordering},
+                Arc,
+            },
         };
 
         let exit = Arc::new(AtomicBool::new(false));
@@ -47,16 +50,16 @@ mod mac {
                 .arg("pull")
                 .spawn()
                 .expect("failed to spawn git")
-                    .wait()
-                    .expect("failed to pull MoltenVK")
+                .wait()
+                .expect("failed to pull MoltenVK")
         } else {
             Command::new("git")
                 .arg("clone")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .spawn()
                 .expect("failed to spawn git")
-                    .wait()
-                    .expect("failed to clone MoltenVK")
+                .wait()
+                .expect("failed to clone MoltenVK")
         };
 
         assert!(git_status.success(), "failed to clone MoltenVK");
@@ -66,20 +69,18 @@ mod mac {
             .arg("fetchDependencies")
             .spawn()
             .expect("failed to spawn fetchDependencies")
-                .wait()
-                .expect("failed to fetchDependencies");
+            .wait()
+            .expect("failed to fetchDependencies");
 
         assert!(status.success(), "failed to fetchDependencies");
 
         // These (currently) match the identifiers used by moltenvk
         let (target_name, dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
-            Ok(target) => {
-                match target.as_ref() {
-                    "macos" => ("macos", "macOS"),
-                    "ios" => ("ios", "iOS"),
-                    target => panic!("unknown target '{}'", target),
-                }
-            }
+            Ok(target) => match target.as_ref() {
+                "macos" => ("macos", "macOS"),
+                "ios" => ("ios", "iOS"),
+                target => panic!("unknown target '{}'", target),
+            },
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
 
@@ -88,8 +89,8 @@ mod mac {
             .arg(target_name)
             .spawn()
             .expect("failed to spawn fetchDependencies")
-                .wait()
-                .expect("failed to fetchDependencies");
+            .wait()
+            .expect("failed to fetchDependencies");
 
         assert!(status.success(), "failed to fetchDependencies");
 
@@ -121,17 +122,18 @@ mod mac {
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn main() {
-    use std::path::{Path, PathBuf};
     use crate::mac::*;
+    use std::path::{Path, PathBuf};
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     let target_name = if !is_external_enabled() {
         let target_dir = Path::new("native");
 
         let target_name = build_molten(&target_dir);
-        let project_dir =
-            PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"))
-                .join(target_dir);
+        let project_dir = PathBuf::from(
+            std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+        )
+        .join(target_dir);
         println!("cargo:rustc-link-search=native={}", project_dir.display());
 
         target_name
