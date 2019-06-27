@@ -1,3 +1,4 @@
+/native
 /target
 **/*.rs.bk
 Cargo.lock
