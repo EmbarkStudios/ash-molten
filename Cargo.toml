@@ -1,11 +1,13 @@
 [package]
 name = "ash-molten"
+description = "Statically linked MoltenVK for Vulkan on Mac using Ash"
 version = "0.1.0"
-authors = ["maik <maik.klein@embark-studios.com>"]
+authors = ["Embark <opensource@embark-studios.com>", "maik <maik.klein@embark-studios.com>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["vulkan", "metal"]
+categories = ["api-bindings", "rendering", "os::macos-apis"]
 repository = "https://github.com/EmbarkStudios/ash-molten"
 homepage = "https://github.com/EmbarkStudios/ash-molten"
 documentation = "https://docs.rs/ash-molten"
