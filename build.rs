@@ -28,7 +28,8 @@ mod mac {
             },
         };
 
-        let checkout_dir = "MoltenVK";
+        let checkout_dir =
+            Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR")).join("MoltenVK");
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -47,9 +48,9 @@ mod mac {
             }
         });
 
-        let git_status = if Path::new(checkout_dir).exists() {
+        let git_status = if Path::new(&checkout_dir).exists() {
             Command::new("git")
-                .current_dir(checkout_dir)
+                .current_dir(&checkout_dir)
                 .arg("pull")
                 .spawn()
                 .expect("failed to spawn git")
@@ -59,6 +60,7 @@ mod mac {
             Command::new("git")
                 .arg("clone")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
+                .arg(&checkout_dir)
                 .spawn()
                 .expect("failed to spawn git")
                 .wait()
@@ -68,7 +70,7 @@ mod mac {
         assert!(git_status.success(), "failed to clone MoltenVK");
 
         let status = Command::new("sh")
-            .current_dir(checkout_dir)
+            .current_dir(&checkout_dir)
             .arg("fetchDependencies")
             .spawn()
             .expect("failed to spawn fetchDependencies")
@@ -88,7 +90,7 @@ mod mac {
         };
 
         let status = Command::new("make")
-            .current_dir("MoltenVK")
+            .current_dir(&checkout_dir)
             .arg(target_name)
             .spawn()
             .expect("failed to spawn fetchDependencies")
@@ -134,9 +136,9 @@ fn main() {
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
-        let target_dir = Path::new("native");
-
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join("MoltenVK-build");
         let target_name = build_molten(&target_dir);
+
         let project_dir = {
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
