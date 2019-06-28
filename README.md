@@ -1,4 +1,4 @@
-# ash-molten
+# 🌋 ash-molten
 `ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
 ## Why?
