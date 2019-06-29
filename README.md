@@ -1,4 +1,9 @@
 # 🌋 ash-molten
+
+[![Build Status](https://travis-ci.com/EmbarkStudios/ash-molten.svg?branch=master)](https://travis-ci.com/EmbarkStudios/ash-molten)
+[![Latest version](https://img.shields.io/crates/v/ash-molten.svg)](https://crates.io/crates/ash-molten)
+[![Docs](https://docs.rs/ash-molten/badge.svg)](https://docs.rs/ash-molten)
+
 `ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
 ## Why?
