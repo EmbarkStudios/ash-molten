@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.com/EmbarkStudios/ash-molten.svg?branch=master)](https://travis-ci.com/EmbarkStudios/ash-molten)
 [![Latest version](https://img.shields.io/crates/v/ash-molten.svg)](https://crates.io/crates/ash-molten)
 [![Docs](https://docs.rs/ash-molten/badge.svg)](https://docs.rs/ash-molten)
+[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
+[![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](http://embark.games)
 
 `ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
@@ -45,6 +47,12 @@ You can run the example with `cargo run`.
 
 `cargo build` will clone the newest master of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application. 
 If you want to compile [MoltenVK](https://github.com/KhronosGroup/MoltenVK) yourself, you can use the `external` feature. `cargo build --features external` requires `libMoltenVK` to be visible (`LD_LIBRARY_PATH`).
+
+## Contributing
+
+We welcome community contributions to this project.
+
+Please read our [Contributor Guide](CONTRIBUTING.md) for more information on how to get started.
 
 ## License
 
