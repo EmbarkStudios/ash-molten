@@ -45,8 +45,19 @@ You can run the example with `cargo run`.
 
 ### Features
 
-`cargo build` will clone the newest master of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application. 
+`cargo build` will clone a specific release of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application. 
+
 If you want to compile [MoltenVK](https://github.com/KhronosGroup/MoltenVK) yourself, you can use the `external` feature. `cargo build --features external` requires `libMoltenVK` to be visible (`LD_LIBRARY_PATH`).
+
+### How to update
+
+To update the version of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) uses, change the following:
+
+- In `build.rs`, change `let tag = "v1.0.37"` to the new [MoltenVK release](https://github.com/KhronosGroup/MoltenVK/releases) tag name
+- Update the crate version in `Cargo.toml`
+  - Bump the patch version
+  - Set the version metadata to the MoltenVK release. 
+  - E.g. `0.2.0+37` -> `0.2.1+38`.
 
 ## Contributing
 

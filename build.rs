@@ -28,8 +28,11 @@ mod mac {
             },
         };
 
+        // MoltenVK git tagged release to use
+        let tag = "v1.0.37";
+
         let checkout_dir =
-            Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR")).join("MoltenVK");
+            Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR")).join(format!("MoltenVK-{}", tag));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -59,6 +62,10 @@ mod mac {
         } else {
             Command::new("git")
                 .arg("clone")
+                .arg("--branch")
+                .arg(tag.to_owned())
+                .arg("--depth")
+                .arg("1")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .arg(&checkout_dir)
                 .spawn()
