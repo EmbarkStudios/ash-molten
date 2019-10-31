@@ -15,7 +15,6 @@ jobs:
 
       # make sure all code has been formatted with rustfmt
       - run: rustup component add rustfmt
-      - run: git submodule update --init
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -39,7 +38,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - run: git submodule update --init
       - uses: actions-rs/cargo@v1
         with:
           command: test
