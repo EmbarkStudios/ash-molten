@@ -17,3 +17,6 @@ ash = "0.29"
 
 [features]
 external = []
+
+[package.metadata.docs.rs]
+default-target = "x86_64-apple-darwin"
