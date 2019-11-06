@@ -8,6 +8,8 @@
 
 `ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
+Requires Xcode 11 and Mac OS 10.15 (Catalina) to compile.
+
 ## Why?
 
 * You want to compile down to a single binary that doesn't need any enviroment variables to bet set.
