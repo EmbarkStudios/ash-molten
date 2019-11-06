@@ -21,6 +21,7 @@
 * `ash-molten` doesn't have access to the validation layers and thefore can not output any debug information.
 
 ## How?
+
 ```Rust
 let entry = ash_molten::MoltenEntry::load().expect("Unable to load Molten");
 let app_name = CString::new("Hello Static Molten").unwrap();
