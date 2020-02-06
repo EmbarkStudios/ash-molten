@@ -98,10 +98,10 @@ mod mac {
         let status = Command::new("xcodebuild")
             .arg("-quiet")
             .arg("-project")
-            .arg("$(XCODE_PROJ)")
+            .arg("MoltenVKPackaging.xcodeproj")
             .arg("-scheme")
             .arg(format!(
-                "$(XCODE_SCHEME_BASE) ({target} only)",
+                "MoltenVK Package ({target} only)",
                 target = dir
             ))
             .arg("-derivedDataPath")
