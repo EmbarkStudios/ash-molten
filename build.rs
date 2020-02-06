@@ -26,6 +26,12 @@ mod mac {
                 Arc,
             },
         };
+        let derive_data_path =
+            PathBuf::from(std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
+                .join("moltenvk");
+
+        // If there is a derive data path, just delete it. It is not needed and my contain locks.
+        let _ = std::fs::remove_dir_all(&derive_data_path);
 
         // MoltenVK git tagged release to use
         let tag = "v1.0.38";
@@ -94,7 +100,6 @@ mod mac {
             },
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
-
         let status = Command::new("xcodebuild")
             .arg("-quiet")
             .arg("-project")
@@ -102,7 +107,7 @@ mod mac {
             .arg("-scheme")
             .arg(format!("MoltenVK Package ({target} only)", target = dir))
             .arg("-derivedDataPath")
-            .arg(std::env::var("CARGO_TARGET_DIR").expect("Couldn't find TARGET_DIR"))
+            .arg(format!("{}", derive_data_path.display()))
             .arg("build")
             .spawn()
             .expect("failed to spawn build")
