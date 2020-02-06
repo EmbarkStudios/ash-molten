@@ -96,13 +96,22 @@ mod mac {
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
 
-        let status = Command::new("make")
-            .current_dir(&checkout_dir)
-            .arg(target_name)
+        let status = Command::new("xcodebuild")
+            .arg("-quiet")
+            .arg("-project")
+            .arg("$(XCODE_PROJ)")
+            .arg("-scheme")
+            .arg(
+                format!("$(XCODE_SCHEME_BASE) ({target} only)"),
+                target = dir,
+            )
+            .arg("-derivedDataPath")
+            .arg(std::env::var("CARGO_TARGET_DIR").expect("Couldn't find TARGET_DIR"))
+            .arg("build")
             .spawn()
-            .expect("failed to spawn fetchDependencies")
+            .expect("failed to spawn build")
             .wait()
-            .expect("failed to fetchDependencies");
+            .expect("failed to build");
 
         assert!(status.success(), "failed to fetchDependencies");
 
