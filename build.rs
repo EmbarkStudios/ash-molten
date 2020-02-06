@@ -103,18 +103,18 @@ mod mac {
         let status = Command::new("xcodebuild")
             .arg("-quiet")
             .arg("-project")
-            .arg("MoltenVKPackaging.xcodeproj")
+            .arg("\"MoltenVKPackaging.xcodeproj\"")
             .arg("-scheme")
-            .arg(format!("MoltenVK Package ({target} only)", target = dir))
+            .arg(format!("\"MoltenVK Package ({target} only)\"", target = dir))
             .arg("-derivedDataPath")
-            .arg(format!("{}", derive_data_path.display()))
+            .arg(format!("\"{}\"", derive_data_path.display()))
             .arg("build")
             .spawn()
             .expect("failed to spawn build")
             .wait()
             .expect("failed to build");
 
-        assert!(status.success(), "failed to fetchDependencies");
+        assert!(status.success(), "failed to build");
 
         let src = {
             let mut pb = PathBuf::new();
