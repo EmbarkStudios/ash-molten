@@ -100,10 +100,7 @@ mod mac {
             .arg("-project")
             .arg("MoltenVKPackaging.xcodeproj")
             .arg("-scheme")
-            .arg(format!(
-                "MoltenVK Package ({target} only)",
-                target = dir
-            ))
+            .arg(format!("MoltenVK Package ({target} only)", target = dir))
             .arg("-derivedDataPath")
             .arg(std::env::var("CARGO_BUILD_TARGET").expect("Couldn't find TARGET_DIR"))
             .arg("build")
