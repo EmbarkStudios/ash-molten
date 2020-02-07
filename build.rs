@@ -109,11 +109,11 @@ mod mac {
             .arg("MoltenVKPackaging.xcodeproj")
             .arg("-scheme")
             .arg(format!(
-                "\"MoltenVK Package ({target} only)\"",
+                "MoltenVK Package ({target} only)",
                 target = dir
             ))
             .arg("-derivedDataPath")
-            .arg(format!("\"{}\"", derive_data_path.display()))
+            .arg(format!("{}", derive_data_path.display()))
             .arg("build")
             .spawn()
             .expect("failed to spawn build")
