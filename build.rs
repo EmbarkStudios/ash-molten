@@ -101,6 +101,7 @@ mod mac {
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
         let status = Command::new("xcodebuild")
+            .current_dir(&checkout_dir)
             .env("XCODE_PROJ", "MoltenVKPackaging.xcodeproj")
             .env("XCODE_SCHEME_BASE", "MoltenVK Package")
             .arg("-quiet")
