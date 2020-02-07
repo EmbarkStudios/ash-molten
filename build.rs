@@ -106,7 +106,7 @@ mod mac {
             .env("XCODE_SCHEME_BASE", "MoltenVK Package")
             .arg("-quiet")
             .arg("-project")
-            .arg("\"MoltenVKPackaging.xcodeproj\"")
+            .arg("MoltenVKPackaging.xcodeproj")
             .arg("-scheme")
             .arg(format!(
                 "\"MoltenVK Package ({target} only)\"",
