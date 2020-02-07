@@ -30,14 +30,17 @@ mod mac {
             PathBuf::from(std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
                 .join("moltenvk");
 
-        // If there is a derive data path, just delete it. It is not needed and my contain locks.
-        let _ = std::fs::remove_dir_all(&derive_data_path);
 
         // MoltenVK git tagged release to use
         let tag = "v1.0.38";
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
             .join(format!("MoltenVK-{}", tag));
+        let derive_data_path = checkout_dir.join("moltenvk");
+
+        // If there is a derive data path, just delete it. It is not needed and may contain locks
+        // that not get deleted correctly
+        let _ = std::fs::remove_dir_all(&derive_data_path);
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
