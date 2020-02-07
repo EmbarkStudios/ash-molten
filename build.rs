@@ -108,10 +108,7 @@ mod mac {
             .arg("-project")
             .arg("MoltenVKPackaging.xcodeproj")
             .arg("-scheme")
-            .arg(format!(
-                "MoltenVK Package ({target} only)",
-                target = dir
-            ))
+            .arg(format!("MoltenVK Package ({target} only)", target = dir))
             .arg("-derivedDataPath")
             .arg(format!("{}", derive_data_path.display()))
             .arg("build")
