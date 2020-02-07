@@ -26,9 +26,6 @@ mod mac {
                 Arc,
             },
         };
-        let derive_data_path =
-            PathBuf::from(std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-                .join("moltenvk");
 
         // MoltenVK git tagged release to use
         let tag = "v1.0.38";
