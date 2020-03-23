@@ -7,7 +7,7 @@ mod mac {
     pub(crate) fn is_external_enabled() -> bool {
         std::env::vars()
             .filter_map(|(flag, _)| {
-                const NAME: &'static str = "CARGO_FEATURE_";
+                const NAME: &str = "CARGO_FEATURE_";
                 if flag.starts_with(NAME) {
                     let feature = flag.split(NAME).nth(1).expect("").to_string();
                     println!("{:?}", feature);
