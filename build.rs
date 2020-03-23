@@ -15,8 +15,7 @@ mod mac {
                 }
                 None
             })
-            .find(|f| f == "EXTERNAL")
-            .is_some()
+            .any(|f| f == "EXTERNAL")
     }
 
     pub(crate) fn build_molten<P: AsRef<Path>>(target_dir: &P) -> &'static str {
