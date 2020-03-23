@@ -13,7 +13,7 @@ homepage = "https://github.com/EmbarkStudios/ash-molten"
 documentation = "https://docs.rs/ash-molten"
 
 [dependencies]
-ash = "0.29"
+ash = "0.30"
 
 [features]
 external = []

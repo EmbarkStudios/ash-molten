@@ -7,7 +7,7 @@ mod mac {
     pub(crate) fn is_external_enabled() -> bool {
         std::env::vars()
             .filter_map(|(flag, _)| {
-                const NAME: &'static str = "CARGO_FEATURE_";
+                const NAME: &str = "CARGO_FEATURE_";
                 if flag.starts_with(NAME) {
                     let feature = flag.split(NAME).nth(1).expect("").to_string();
                     println!("{:?}", feature);
@@ -15,8 +15,7 @@ mod mac {
                 }
                 None
             })
-            .find(|f| f == "EXTERNAL")
-            .is_some()
+            .any(|f| f == "EXTERNAL")
     }
 
     pub(crate) fn build_molten<P: AsRef<Path>>(target_dir: &P) -> &'static str {
