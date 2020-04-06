@@ -28,7 +28,7 @@ mod mac {
         };
 
         // MoltenVK git tagged release to use
-        let tag = "v1.0.38";
+        let tag = "v1.0.41";
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
             .join(format!("MoltenVK-{}", tag));
