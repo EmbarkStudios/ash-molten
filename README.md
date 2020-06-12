@@ -1,6 +1,5 @@
 # 🌋 ash-molten
 
-[![Build Status](https://travis-ci.com/EmbarkStudios/ash-molten.svg?branch=master)](https://travis-ci.com/EmbarkStudios/ash-molten)
 [![Latest version](https://img.shields.io/crates/v/ash-molten.svg)](https://crates.io/crates/ash-molten)
 [![Docs](https://docs.rs/ash-molten/badge.svg)](https://docs.rs/ash-molten)
 [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
