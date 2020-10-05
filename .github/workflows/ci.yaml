@@ -5,7 +5,7 @@ jobs:
     name: Lint
     runs-on: macOS-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_11.5.app
+      DEVELOPER_DIR: /Applications/Xcode_12.2.app
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
@@ -37,7 +37,7 @@ jobs:
     name: Test
     runs-on: macOS-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_11.5.app
+      DEVELOPER_DIR: /Applications/Xcode_12.2.app
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
