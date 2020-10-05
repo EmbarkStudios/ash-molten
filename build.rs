@@ -75,16 +75,6 @@ mod mac {
 
         assert!(git_status.success(), "failed to clone MoltenVK");
 
-        let status = Command::new("sh")
-            .current_dir(&checkout_dir)
-            .arg("fetchDependencies")
-            .spawn()
-            .expect("failed to spawn fetchDependencies")
-            .wait()
-            .expect("failed to fetchDependencies");
-
-        assert!(status.success(), "failed to fetchDependencies");
-
         // These (currently) match the identifiers used by moltenvk
         let (target_name, dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
             Ok(target) => match target.as_ref() {
@@ -94,6 +84,17 @@ mod mac {
             },
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
+
+        let status = Command::new("sh")
+            .current_dir(&checkout_dir)
+            .arg("fetchDependencies")
+            .arg(format!("--{}", target_name))
+            .spawn()
+            .expect("failed to spawn fetchDependencies")
+            .wait()
+            .expect("failed to fetchDependencies");
+
+        assert!(status.success(), "failed to fetchDependencies");
 
         let status = Command::new("make")
             .current_dir(&checkout_dir)
