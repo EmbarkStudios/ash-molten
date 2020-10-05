@@ -110,8 +110,9 @@ mod mac {
             let mut pb = PathBuf::new();
             pb.push(checkout_dir);
             pb.push("Package/Release/MoltenVK");
+            pb.push("dylib");
             pb.push(dir);
-            pb.push("static/libMoltenVK.a");
+            pb.push("libMoltenVK.dylib");
             pb
         };
 
@@ -122,7 +123,7 @@ mod mac {
 
             std::fs::create_dir_all(&pb).expect("failed to create output directory");
 
-            pb.push("libMoltenVK.a");
+            pb.push("libMoltenVK.dylib");
             pb
         };
 
@@ -164,7 +165,7 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=IOKit");
     println!("cargo:rustc-link-lib=framework=IOSurface");
     println!("cargo:rustc-link-lib=dylib=c++");
-    println!("cargo:rustc-link-lib=static=MoltenVK");
+    println!("cargo:rustc-link-lib=dylib=MoltenVK");
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
