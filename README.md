@@ -1,9 +1,11 @@
 # 🌋 ash-molten
 
-[![Latest version](https://img.shields.io/crates/v/ash-molten.svg)](https://crates.io/crates/ash-molten)
+[![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](https://embark.dev)
+[![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
+[![Crates.io](https://img.shields.io/crates/v/ash-molten.svg)](https://crates.io/crates/ash-molten)
 [![Docs](https://docs.rs/ash-molten/badge.svg)](https://docs.rs/ash-molten)
-[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
-[![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](http://embark.games)
+[![dependency status](https://deps.rs/repo/github/EmbarkStudios/ash-molten/status.svg)](https://deps.rs/repo/github/EmbarkStudios/ash-molten)
+[![Build status](https://github.com/EmbarkStudios/ash-molten/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/ash-molten/actions)
 
 `ash-molten` is built on top of [ash](https://github.com/MaikKlein/ash) and exposes a new entry point to statically link with [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
@@ -62,6 +64,8 @@ To update the version of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) us
   - E.g. `0.2.0+37` -> `0.2.1+38`.
 
 ## Contributing
+
+[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](../CODE_OF_CONDUCT.md)
 
 We welcome community contributions to this project.
 
