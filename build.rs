@@ -3,7 +3,7 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static TAG: & str = "v1.1.0";
+    pub static TAG: &str = "v1.1.0";
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
