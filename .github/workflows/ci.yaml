@@ -48,7 +48,8 @@ jobs:
         with:
           command: test
           args: --verbose
-      - uses: actions/upload-artifact@v2
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v2
         with:
           name: test-artifact
           path: |
