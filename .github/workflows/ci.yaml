@@ -48,3 +48,13 @@ jobs:
         with:
           command: test
           args: --verbose
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-artifact
+          path: |
+            /Users/runner/work/ash-molten/ash-molten/target/debug/deps/
+            !/Users/runner/work/ash-molten/ash-molten/target/debug/deps/*.d
+            !/Users/runner/work/ash-molten/ash-molten/target/debug/deps/*.rlib
+            !/Users/runner/work/ash-molten/ash-molten/target/debug/deps/*.rmeta
+            !/Users/runner/work/ash-molten/ash-molten/target/debug/deps/*.dSYM
+
