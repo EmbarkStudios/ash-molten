@@ -61,11 +61,9 @@ mod mac {
         } else {
             Command::new("git")
                 .arg("clone")
-                .arg("--branch")
-                .arg(TAG.to_owned())
                 .arg("--depth")
                 .arg("1")
-                .arg("https://github.com/KhronosGroup/MoltenVK.git")
+                .arg("https://github.com/MarnixKuijs/MoltenVK.git")
                 .arg(&checkout_dir)
                 .spawn()
                 .expect("failed to spawn git")
