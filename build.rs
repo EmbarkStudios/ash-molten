@@ -61,9 +61,11 @@ mod mac {
         } else {
             Command::new("git")
                 .arg("clone")
+                .arg("--branch")
+                .arg(TAG.to_owned())
                 .arg("--depth")
                 .arg("1")
-                .arg("https://github.com/MarnixKuijs/MoltenVK.git")
+                .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .arg(&checkout_dir)
                 .spawn()
                 .expect("failed to spawn git")
@@ -71,7 +73,7 @@ mod mac {
                 .expect("failed to clone MoltenVK")
         };
 
-        assert!(git_status.success(), "failed to clone MoltenVK");
+        assert!(git_status.success(), "failed to get MoltenVK");
 
         // These (currently) match the identifiers used by moltenvk
         let (target_name, _dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
@@ -101,11 +103,11 @@ mod mac {
             .current_dir(&checkout_dir)
             .arg(target)
             .spawn()
-            .expect("failed to spawn fetchDependencies")
+            .expect("failed to build MoltenVK")
             .wait()
-            .expect("failed to fetchDependencies");
+            .expect("failed to build MoltenVK");
 
-        assert!(status.success(), "failed to fetchDependencies");
+        assert!(status.success(), "failed to build MoltenVK");
 
         exit.store(true, Ordering::Release);
         handle.join().unwrap();
@@ -117,6 +119,12 @@ mod mac {
 fn main() {
     use crate::mac::*;
     use std::path::{Path, PathBuf};
+
+    #[cfg(target_os = "macos")]
+    {
+        let os_info = os_info::get();  
+        assert!(*os_info.version() > os_info::Version::Semantic(10, 15, 4), "OS version is not supported, please update your OS");
+    }
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
