@@ -3,9 +3,9 @@ name: CI
 jobs:
   lint:
     name: Lint
-    runs-on: macOS-latest
+    runs-on: macos-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_11.5.app
+      DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
@@ -35,9 +35,9 @@ jobs:
 
   test:
     name: Test
-    runs-on: macOS-latest
+    runs-on: macos-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_11.5.app
+      DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
@@ -46,4 +46,5 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: test
+          command: build
+

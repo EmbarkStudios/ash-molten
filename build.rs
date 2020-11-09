@@ -1,6 +1,9 @@
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
+
+    // MoltenVK git tagged release to use
+    pub static TAG: &str = "v1.1.0";
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
@@ -18,7 +21,7 @@ mod mac {
             .any(|f| f == "EXTERNAL")
     }
 
-    pub(crate) fn build_molten<P: AsRef<Path>>(target_dir: &P) -> &'static str {
+    pub(crate) fn build_molten<P: AsRef<Path>>(_target_dir: &P) -> &'static str {
         use std::{
             process::Command,
             sync::{
@@ -27,11 +30,8 @@ mod mac {
             },
         };
 
-        // MoltenVK git tagged release to use
-        let tag = "v.1.0.43";
-
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", tag));
+            .join(format!("MoltenVK-{}", TAG));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -62,7 +62,7 @@ mod mac {
             Command::new("git")
                 .arg("clone")
                 .arg("--branch")
-                .arg(tag.to_owned())
+                .arg(TAG.to_owned())
                 .arg("--depth")
                 .arg("1")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
@@ -73,20 +73,10 @@ mod mac {
                 .expect("failed to clone MoltenVK")
         };
 
-        assert!(git_status.success(), "failed to clone MoltenVK");
-
-        let status = Command::new("sh")
-            .current_dir(&checkout_dir)
-            .arg("fetchDependencies")
-            .spawn()
-            .expect("failed to spawn fetchDependencies")
-            .wait()
-            .expect("failed to fetchDependencies");
-
-        assert!(status.success(), "failed to fetchDependencies");
+        assert!(git_status.success(), "failed to get MoltenVK");
 
         // These (currently) match the identifiers used by moltenvk
-        let (target_name, dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
+        let (target_name, _dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
             Ok(target) => match target.as_ref() {
                 "macos" => ("macos", "macOS"),
                 "ios" => ("ios", "iOS"),
@@ -95,9 +85,10 @@ mod mac {
             Err(e) => panic!("failed to determinte target os '{}'", e),
         };
 
-        let status = Command::new("make")
+        let status = Command::new("sh")
             .current_dir(&checkout_dir)
-            .arg(target_name)
+            .arg("fetchDependencies")
+            .arg(format!("--{}", target_name))
             .spawn()
             .expect("failed to spawn fetchDependencies")
             .wait()
@@ -105,29 +96,18 @@ mod mac {
 
         assert!(status.success(), "failed to fetchDependencies");
 
-        let src = {
-            let mut pb = PathBuf::new();
-            pb.push(checkout_dir);
-            pb.push("Package/Release/MoltenVK");
-            pb.push(dir);
-            pb.push("static/libMoltenVK.a");
-            pb
-        };
+        let mut target = target_name.to_owned();
+        target.push_str("-debug");
 
-        let target = {
-            let mut pb = PathBuf::new();
-            pb.push(target_dir);
-            pb.push(target_name);
+        let status = Command::new("make")
+            .current_dir(&checkout_dir)
+            .arg(target)
+            .spawn()
+            .expect("failed to build MoltenVK")
+            .wait()
+            .expect("failed to build MoltenVK");
 
-            std::fs::create_dir_all(&pb).expect("failed to create output directory");
-
-            pb.push("libMoltenVK.a");
-            pb
-        };
-
-        if let Err(e) = std::fs::copy(&src, &target) {
-            panic!("failed to copy {:?} to {:?}: {}", src, target, e);
-        }
+        assert!(status.success(), "failed to build MoltenVK");
 
         exit.store(true, Ordering::Release);
         handle.join().unwrap();
@@ -142,18 +122,21 @@ fn main() {
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join("MoltenVK-build");
-        let target_name = build_molten(&target_dir);
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
+            "MoltenVK-{}/Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
+            crate::mac::TAG,
+            std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+        ));
+        let _target_name = build_molten(&target_dir);
 
         let project_dir = {
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
-            pb.push(target_name);
             pb
         };
-
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
