@@ -15,9 +15,6 @@ documentation = "https://docs.rs/ash-molten"
 [dependencies]
 ash = "0.31"
 
-[build-dependencies]
-os_info =  { version = "3.0", default-features = false }
-
 [features]
 external = []
 

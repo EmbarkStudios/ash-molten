@@ -120,12 +120,6 @@ fn main() {
     use crate::mac::*;
     use std::path::{Path, PathBuf};
 
-    #[cfg(target_os = "macos")]
-    {
-        let os_info = os_info::get();  
-        assert!(*os_info.version() > os_info::Version::Semantic(10, 15, 4), "OS version is not supported, please update your OS");
-    }
-
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_external_enabled() {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
