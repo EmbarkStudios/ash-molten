@@ -96,9 +96,6 @@ mod mac {
 
         assert!(status.success(), "failed to fetchDependencies");
 
-        let mut target = target_name.to_owned();
-        target.push_str("-debug");
-
         let status = Command::new("make")
             .current_dir(&checkout_dir)
             .arg(target)
