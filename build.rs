@@ -98,7 +98,7 @@ mod mac {
 
         let status = Command::new("make")
             .current_dir(&checkout_dir)
-            .arg(target)
+            .arg(target_name)
             .spawn()
             .expect("failed to build MoltenVK")
             .wait()
