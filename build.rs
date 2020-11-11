@@ -112,7 +112,6 @@ mod mac {
     }
 
     pub(crate) fn download_prebuilt_molten<P: AsRef<Path>>(target_dir: &P) {
-        use std::io::prelude::*;
         use std::process::{Command, Stdio};
 
         std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
@@ -120,49 +119,52 @@ mod mac {
         std::env::set_current_dir(&target_dir).expect("Couldn't change current directory");
 
         let curl = Command::new("curl")
-        .arg("-s")
-        .arg(format!("https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}", VERSION))
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Couldn't launch curl");
+            .arg("-s")
+            .arg(format!(
+                "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
+                VERSION
+            ))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch curl");
 
         let curl_out = curl.stdout.expect("Failed to open curl stdout");
-       
+
         let grep = Command::new("grep")
-        .arg("browser_download_url.*zip")
-        .stdin(Stdio::from(curl_out))
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Couldn't launch grep");
+            .arg("browser_download_url.*zip")
+            .stdin(Stdio::from(curl_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch grep");
 
         let grep_out = grep.stdout.expect("Failed to open grep stdout");
 
         let cut = Command::new("cut")
-        .args(&["-d", ":", "-f", "2,3"])
-        .stdin(Stdio::from(grep_out))
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Couldn't launch cut");
+            .args(&["-d", ":", "-f", "2,3"])
+            .stdin(Stdio::from(grep_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut");
 
         let cut_out = cut.stdout.expect("Failed to open grep stdout");
 
         let tr = Command::new("tr")
-        .args(&["-d", "\""])
-        .stdin(Stdio::from(cut_out))
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Couldn't launch cut");
+            .args(&["-d", "\""])
+            .stdin(Stdio::from(cut_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut");
 
         let tr_out = tr.stdout.expect("Failed to open grep stdout");
 
         let output = Command::new("xargs")
-        .args(&["-n", "1", "curl", "-LO", "--silent"])
-        .stdin(Stdio::from(tr_out))
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Couldn't launch cut")
-        .wait_with_output()
-        .expect("failed to wait on xargs");
+            .args(&["-n", "1", "curl", "-LO", "--silent"])
+            .stdin(Stdio::from(tr_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut")
+            .wait_with_output()
+            .expect("failed to wait on xargs");
 
         assert!(output.status.success());
 
@@ -170,22 +172,18 @@ mod mac {
             let path = path.unwrap().path();
             if let Some("zip") = path.extension().and_then(std::ffi::OsStr::to_str) {
                 let status = Command::new("unzip")
-                //.args(&["/*.zip","-q", "-x", "__MACOSX/*"])
-                .arg("-o")
-                .arg(path.to_owned())
-                .arg("-x")
-                .arg("__MACOSX/*")
-                .spawn()
-                .expect("Couldn't launch unzip")
-                .wait()
-                .expect("failed to wait on unzip");
+                    .arg("-o")
+                    .arg(path.to_owned())
+                    .arg("-x")
+                    .arg("__MACOSX/*")
+                    .spawn()
+                    .expect("Couldn't launch unzip")
+                    .wait()
+                    .expect("failed to wait on unzip");
 
                 assert!(status.success());
-
             }
         }
-
-
     }
 }
 
@@ -193,13 +191,15 @@ mod mac {
 fn main() {
     use crate::mac::*;
     use std::path::{Path, PathBuf};
-    use std::ops::BitXor;
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT");
 
-    assert!(!(external_enabled && pre_built_enabled), "external and prebuild cannot be active at the same time");
+    assert!(
+        !(external_enabled && pre_built_enabled),
+        "external and prebuild cannot be active at the same time"
+    );
 
     if !external_enabled && !pre_built_enabled {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
@@ -224,7 +224,6 @@ fn main() {
     } else if pre_built_enabled {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
             .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
-
 
         download_prebuilt_molten(&target_dir);
 
