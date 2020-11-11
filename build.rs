@@ -134,10 +134,8 @@ fn main() {
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     if !is_feature_enabled("EXTERNAL") {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
-            "MoltenVK-{}",
-            crate::mac::VERSION,
-        ));
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
+            .join(format!("MoltenVK-{}", crate::mac::VERSION,));
         let _target_name = build_molten(&target_dir);
 
         let project_dir = {
@@ -150,7 +148,7 @@ fn main() {
                 std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
                 std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
             ));
-            
+
             pb
         };
 
