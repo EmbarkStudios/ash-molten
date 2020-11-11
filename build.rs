@@ -3,11 +3,11 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static TAG: &str = "v1.1.0";
+    pub static VERSION: &str = "1.1.0";
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
-    pub(crate) fn is_external_enabled() -> bool {
+    pub(crate) fn is_feature_enabled(feature: &str) -> bool {
         std::env::vars()
             .filter_map(|(flag, _)| {
                 const NAME: &str = "CARGO_FEATURE_";
@@ -18,7 +18,7 @@ mod mac {
                 }
                 None
             })
-            .any(|f| f == "EXTERNAL")
+            .any(|f| f == feature)
     }
 
     pub(crate) fn build_molten<P: AsRef<Path>>(_target_dir: &P) -> &'static str {
@@ -31,7 +31,7 @@ mod mac {
         };
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", TAG));
+            .join(format!("MoltenVK-{}", VERSION));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -62,7 +62,7 @@ mod mac {
             Command::new("git")
                 .arg("clone")
                 .arg("--branch")
-                .arg(TAG.to_owned())
+                .arg(format!("v{}", VERSION.to_owned()))
                 .arg("--depth")
                 .arg("1")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
@@ -110,6 +110,21 @@ mod mac {
         handle.join().unwrap();
         target_name
     }
+
+    pub(crate) fn download_prebuilt_molten<P: AsRef<Path>>(target_dir: &P) {
+        use std::process::Command;
+
+        let status = Command::new("sh")
+            .arg("download-prebuilt.sh")
+            .arg(target_dir.as_ref())
+            .arg(VERSION)
+            .spawn()
+            .expect("failed to download prebuilt binary")
+            .wait()
+            .expect("failed to download prebuilt binary");
+
+        assert!(status.success(), "failed to download prebuilt binary");
+    }
 }
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -118,12 +133,10 @@ fn main() {
     use std::path::{Path, PathBuf};
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
-    if !is_external_enabled() {
+    if !is_feature_enabled("EXTERNAL") {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
-            "MoltenVK-{}/Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
-            crate::mac::TAG,
-            std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            "MoltenVK-{}",
+            crate::mac::VERSION,
         ));
         let _target_name = build_molten(&target_dir);
 
@@ -132,8 +145,36 @@ fn main() {
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
+            pb.push(format!(
+                "Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
+                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ));
+            
             pb
         };
+
+        println!("cargo:rustc-link-search=native={}", project_dir.display());
+    } else {
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
+            .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
+
+        download_prebuilt_molten(&target_dir);
+
+        let project_dir = {
+            let mut pb = PathBuf::from(
+                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+            );
+            pb.push(target_dir);
+            pb.push(format!(
+                "{}-{}",
+                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ));
+
+            pb
+        };
+
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
