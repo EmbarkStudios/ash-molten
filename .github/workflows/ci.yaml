@@ -25,7 +25,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-features -- -D warnings
+          args: -- -D warnings
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --features pre-built -- -D warnings
 
   cargo-deny:
     runs-on: ubuntu-latest
@@ -47,4 +51,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --features pre-built

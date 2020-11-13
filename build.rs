@@ -3,11 +3,11 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static TAG: &str = "v1.1.0";
+    pub static VERSION: &str = "1.1.0";
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
-    pub(crate) fn is_external_enabled() -> bool {
+    pub(crate) fn is_feature_enabled(feature: &str) -> bool {
         std::env::vars()
             .filter_map(|(flag, _)| {
                 const NAME: &str = "CARGO_FEATURE_";
@@ -18,7 +18,7 @@ mod mac {
                 }
                 None
             })
-            .any(|f| f == "EXTERNAL")
+            .any(|f| f == feature)
     }
 
     pub(crate) fn build_molten<P: AsRef<Path>>(_target_dir: &P) -> &'static str {
@@ -31,7 +31,7 @@ mod mac {
         };
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", TAG));
+            .join(format!("MoltenVK-{}", VERSION));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -62,7 +62,7 @@ mod mac {
             Command::new("git")
                 .arg("clone")
                 .arg("--branch")
-                .arg(TAG.to_owned())
+                .arg(format!("v{}", VERSION.to_owned()))
                 .arg("--depth")
                 .arg("1")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
@@ -110,6 +110,81 @@ mod mac {
         handle.join().unwrap();
         target_name
     }
+
+    pub(crate) fn download_prebuilt_molten<P: AsRef<Path>>(target_dir: &P) {
+        use std::process::{Command, Stdio};
+
+        std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
+
+        std::env::set_current_dir(&target_dir).expect("Couldn't change current directory");
+
+        let curl = Command::new("curl")
+            .arg("-s")
+            .arg(format!(
+                "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
+                VERSION
+            ))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch curl");
+
+        let curl_out = curl.stdout.expect("Failed to open curl stdout");
+
+        let grep = Command::new("grep")
+            .arg("browser_download_url.*zip")
+            .stdin(Stdio::from(curl_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch grep");
+
+        let grep_out = grep.stdout.expect("Failed to open grep stdout");
+
+        let cut = Command::new("cut")
+            .args(&["-d", ":", "-f", "2,3"])
+            .stdin(Stdio::from(grep_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut");
+
+        let cut_out = cut.stdout.expect("Failed to open grep stdout");
+
+        let tr = Command::new("tr")
+            .args(&["-d", "\""])
+            .stdin(Stdio::from(cut_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut");
+
+        let tr_out = tr.stdout.expect("Failed to open grep stdout");
+
+        let output = Command::new("xargs")
+            .args(&["-n", "1", "curl", "-LO", "--silent"])
+            .stdin(Stdio::from(tr_out))
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Couldn't launch cut")
+            .wait_with_output()
+            .expect("failed to wait on xargs");
+
+        assert!(output.status.success());
+
+        for path in std::fs::read_dir(&target_dir).expect("Couldn't read dir") {
+            let path = path.unwrap().path();
+            if let Some("zip") = path.extension().and_then(std::ffi::OsStr::to_str) {
+                let status = Command::new("unzip")
+                    .arg("-o")
+                    .arg(path.to_owned())
+                    .arg("-x")
+                    .arg("__MACOSX/*")
+                    .spawn()
+                    .expect("Couldn't launch unzip")
+                    .wait()
+                    .expect("failed to wait on unzip");
+
+                assert!(status.success());
+            }
+        }
+    }
 }
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -118,13 +193,17 @@ fn main() {
     use std::path::{Path, PathBuf};
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
-    if !is_external_enabled() {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
-            "MoltenVK-{}/Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
-            crate::mac::TAG,
-            std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-        ));
+    let external_enabled = is_feature_enabled("EXTERNAL");
+    let pre_built_enabled = is_feature_enabled("PRE_BUILT");
+
+    assert!(
+        !(external_enabled && pre_built_enabled),
+        "external and prebuild cannot be active at the same time"
+    );
+
+    if !external_enabled && !pre_built_enabled {
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
+            .join(format!("MoltenVK-{}", crate::mac::VERSION,));
         let _target_name = build_molten(&target_dir);
 
         let project_dir = {
@@ -132,8 +211,36 @@ fn main() {
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
+            pb.push(format!(
+                "Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
+                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ));
+
             pb
         };
+
+        println!("cargo:rustc-link-search=native={}", project_dir.display());
+    } else if pre_built_enabled {
+        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
+            .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
+
+        download_prebuilt_molten(&target_dir);
+
+        let project_dir = {
+            let mut pb = PathBuf::from(
+                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+            );
+            pb.push(target_dir);
+            pb.push(format!(
+                "{}-{}",
+                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ));
+
+            pb
+        };
+
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
