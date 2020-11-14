@@ -49,7 +49,9 @@ You can run the example with `cargo run`.
 
 ### Features
 
-`cargo build` will clone a specific release of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application. 
+`cargo build` will clone a specific release of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) compile and statically link it with your application.
+`cargo build --features pre-built` will download a pre-built version of MoltenVK from a release of ash-molten.
+`cargo build --features external` provide own MoltenVK library.
 
 If you want to compile [MoltenVK](https://github.com/KhronosGroup/MoltenVK) yourself, you can use the `external` feature. `cargo build --features external` requires `libMoltenVK` to be visible (`LD_LIBRARY_PATH`).
 
@@ -57,11 +59,22 @@ If you want to compile [MoltenVK](https://github.com/KhronosGroup/MoltenVK) your
 
 To update the version of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) uses, change the following:
 
-- In `build.rs`, change `let tag = "v1.0.37"` to the new [MoltenVK release](https://github.com/KhronosGroup/MoltenVK/releases) tag name
+- In `build.rs`, change `static VERSION = "1.1.0"` to the new [MoltenVK release](https://github.com/KhronosGroup/MoltenVK/releases) tag name
 - Update the crate version in `Cargo.toml`
   - Bump the patch version
   - Set the version metadata to the MoltenVK release. 
   - E.g. `0.2.0+37` -> `0.2.1+38`.
+
+### Updating pre-built version
+
+To update the prebuilt version uses, change the following:
+
+- Follow the steps mentioned above.
+- Download the MoltenVK XCFramework from, for example, the Vulkan SDK for Mac or build [MoltenVK](https://github.com/KhronosGroup/MoltenVK/) yourself.
+  - in the case of downloading it from an external source make sure MoltenVK version matches `static VERSION`.
+- From the XCFramework folder, from the built version of MoltenVK, zip the folders of platforms that need to be supported individually.
+- Create a release with the following tag MoltenVK-{version number}.
+- Upload the zip files to the release with the MoltenVK-{version number} tag.
 
 ## Contributing
 
