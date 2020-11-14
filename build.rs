@@ -241,6 +241,9 @@ fn main() {
             pb
         };
 
+        eprintln!("{}", project_dir.display());
+        panic!();
+
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
