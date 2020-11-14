@@ -116,6 +116,8 @@ mod mac {
 
         std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
 
+        let previous_path = std::env::current_dir().expect("Couldn't get current directory");
+
         std::env::set_current_dir(&target_dir).expect("Couldn't change current directory");
 
         let curl = Command::new("curl")
@@ -184,6 +186,8 @@ mod mac {
                 assert!(status.success());
             }
         }
+
+        std::env::set_current_dir(&previous_path).expect("Couldn't change current directory");
     }
 }
 
@@ -240,7 +244,6 @@ fn main() {
 
             pb
         };
-
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
