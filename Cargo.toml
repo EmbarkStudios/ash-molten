@@ -16,8 +16,11 @@ documentation = "https://docs.rs/ash-molten"
 ash = "0.31"
 
 [features]
-external = []
-pre-built = []
+# Build features
+# Without build feature enabled MoltenVK will be build from source
+external = [] # Supply own MoltenVK lib
+pre-built = [] # Download pre-built MoltenVK from github release
+
 
 [package.metadata.docs.rs]
 default-target = "x86_64-apple-darwin"
