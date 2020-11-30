@@ -60,4 +60,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --verbose --features pre-built
+          args: --features pre-built
