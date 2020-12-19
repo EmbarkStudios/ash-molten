@@ -198,12 +198,21 @@ fn main() {
 
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     let external_enabled = is_feature_enabled("EXTERNAL");
-    let pre_built_enabled = is_feature_enabled("PRE_BUILT");
+    let mut pre_built_enabled = is_feature_enabled("PRE_BUILT");
+
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     assert!(
         !(external_enabled && pre_built_enabled),
         "external and prebuild cannot be active at the same time"
     );
+
+    // no prebuilt libraries for aarch64-apple-darwin yet, so for now silently disable it and build from source instead
+    // https://github.com/EmbarkStudios/ash-molten/issues/36
+    if target_os == "macos" && target_arch == "aarch64" {
+        pre_built_enabled = false;
+    }
 
     if !external_enabled && !pre_built_enabled {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
@@ -216,25 +225,11 @@ fn main() {
         .join(&target_dir)
         .join("Package/Latest/MoltenVK/MoltenVK.xcframework");
 
-        let static_lib_dir = framework_path.join(format!(
-            "{}-{}",
-            std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-        ));
+        let static_lib_dir = framework_path.join(format!("{}-{}", target_os, target_arch));
 
         let static_lib_path = static_lib_dir.join("libMoltenVK.a");
         if !static_lib_path.exists() {
-            /*
-                        panic!(
-                            "Couldn't find static library: {}",
-                            static_lib_path.display()
-                        );
-            */
-            let fat_static_lib_dir = format!(
-                "{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                "arm64_x86_64"
-            );
+            let fat_static_lib_dir = format!("{}-{}", target_os, "arm64_x86_64");
             let fat_static_lib_path = framework_path
                 .join(fat_static_lib_dir)
                 .join("libMoltenVK.a");
@@ -288,11 +283,7 @@ fn main() {
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
-            pb.push(format!(
-                "{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
+            pb.push(format!("{}-{}", target_os, target_arch));
 
             pb
         };
