@@ -210,21 +210,66 @@ fn main() {
             .join(format!("MoltenVK-{}", crate::mac::VERSION,));
         let _target_name = build_molten(&target_dir);
 
-        let project_dir = {
-            let mut pb = PathBuf::from(
-                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+        let framework_path = PathBuf::from(
+            std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+        )
+        .join(&target_dir)
+        .join("Package/Latest/MoltenVK/MoltenVK.xcframework");
+        
+        let static_lib_dir = framework_path.join(format!(
+            "{}-{}",
+            std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
+            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+        ));
+
+        let static_lib_path = static_lib_dir.join("libMoltenVK.a");
+        if !static_lib_path.exists() {
+  /*
+            panic!(
+                "Couldn't find static library: {}",
+                static_lib_path.display()
             );
-            pb.push(target_dir);
-            pb.push(format!(
-                "Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
+*/
+            let fat_static_lib_dir = format!(
+                "{}-{}",
                 std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
+                "arm64_x86_64"
+            );
+            let fat_static_lib_path = framework_path.join(fat_static_lib_dir).join("libMoltenVK.a");
+            if !fat_static_lib_path.exists() {
+                panic!(
+                    "Couldn't find fat static library: {}",
+                    fat_static_lib_path.display()
+                );
+            }
+    
+            let thin_static_lib_dir = target_dir.join("thin-arm64");
+            std::fs::create_dir_all(&thin_static_lib_dir).unwrap();
+            let thin_static_lib_path = thin_static_lib_dir.join("libMoltenVK.a");
 
-            pb
-        };
+            std::process::Command::new("lipo")
+                .arg(fat_static_lib_path)
+                .arg("-thin")
+                .arg("arm64")
+                .arg("-output")
+                .arg(thin_static_lib_path.clone())
+                .spawn()
+                .expect("failed to start lipo")
+                .wait()
+                .expect("failed to split fat library to thin library with lipo");
 
-        println!("cargo:rustc-link-search=native={}", project_dir.display());
+            if !thin_static_lib_path.exists() {
+                panic!(
+                    "Couldn't find thin static library: {}",
+                    thin_static_lib_path.display()
+                );
+            }
+    
+            println!("cargo:rustc-link-search=native={}", thin_static_lib_dir.display());
+        } else {
+            println!("cargo:rustc-link-search=native={}", static_lib_dir.display());
+        }
+
     } else if pre_built_enabled {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
             .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
