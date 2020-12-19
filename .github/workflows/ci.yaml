@@ -7,7 +7,7 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -28,16 +28,16 @@ jobs:
   cargo-deny:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: EmbarkStudios/cargo-deny-action@v1
 
-  test-source:
-    name: Test (source build)
+  test-mac-x64-source:
+    name: Test Mac x64 (source build)
     runs-on: macos-latest
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -46,13 +46,13 @@ jobs:
         with:
           command: build
 
-  test:
-    name: Test (pre-built)
+  test-mac-x64-prebuilt:
+    name: Test Mac x64 (pre-built)
     runs-on: macos-latest
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -61,3 +61,21 @@ jobs:
         with:
           command: build
           args: --verbose --features pre-built
+
+
+  test-mac-aarch64-source:
+    name: Test Mac aarch64 (source build)
+    runs-on: macos-latest
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_12.1.app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: aarch64-apple-darwin
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --target aarch64-apple-darwin
