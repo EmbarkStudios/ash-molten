@@ -215,7 +215,7 @@ fn main() {
         )
         .join(&target_dir)
         .join("Package/Latest/MoltenVK/MoltenVK.xcframework");
-        
+
         let static_lib_dir = framework_path.join(format!(
             "{}-{}",
             std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
@@ -224,25 +224,27 @@ fn main() {
 
         let static_lib_path = static_lib_dir.join("libMoltenVK.a");
         if !static_lib_path.exists() {
-  /*
-            panic!(
-                "Couldn't find static library: {}",
-                static_lib_path.display()
-            );
-*/
+            /*
+                        panic!(
+                            "Couldn't find static library: {}",
+                            static_lib_path.display()
+                        );
+            */
             let fat_static_lib_dir = format!(
                 "{}-{}",
                 std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
                 "arm64_x86_64"
             );
-            let fat_static_lib_path = framework_path.join(fat_static_lib_dir).join("libMoltenVK.a");
+            let fat_static_lib_path = framework_path
+                .join(fat_static_lib_dir)
+                .join("libMoltenVK.a");
             if !fat_static_lib_path.exists() {
                 panic!(
                     "Couldn't find fat static library: {}",
                     fat_static_lib_path.display()
                 );
             }
-    
+
             let thin_static_lib_dir = target_dir.join("thin-arm64");
             std::fs::create_dir_all(&thin_static_lib_dir).unwrap();
             let thin_static_lib_path = thin_static_lib_dir.join("libMoltenVK.a");
@@ -264,12 +266,17 @@ fn main() {
                     thin_static_lib_path.display()
                 );
             }
-    
-            println!("cargo:rustc-link-search=native={}", thin_static_lib_dir.display());
-        } else {
-            println!("cargo:rustc-link-search=native={}", static_lib_dir.display());
-        }
 
+            println!(
+                "cargo:rustc-link-search=native={}",
+                thin_static_lib_dir.display()
+            );
+        } else {
+            println!(
+                "cargo:rustc-link-search=native={}",
+                static_lib_dir.display()
+            );
+        }
     } else if pre_built_enabled {
         let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
             .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
