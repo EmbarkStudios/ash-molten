@@ -4,7 +4,7 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static VERSION: &str = "1.1.0";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.1";
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
@@ -32,7 +32,7 @@ mod mac {
         };
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", VERSION));
+            .join(format!("MoltenVK-{}", MOLTEN_VK_VERSION));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -63,7 +63,7 @@ mod mac {
             Command::new("git")
                 .arg("clone")
                 .arg("--branch")
-                .arg(format!("v{}", VERSION.to_owned()))
+                .arg(format!("v{}", MOLTEN_VK_VERSION.to_owned()))
                 .arg("--depth")
                 .arg("1")
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
@@ -125,7 +125,7 @@ mod mac {
             .arg("-s")
             .arg(format!(
                 "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
-                VERSION
+                MOLTEN_VK_VERSION
             ))
             .stdout(Stdio::piped())
             .spawn()
@@ -213,7 +213,7 @@ fn main() {
     if !external_enabled {
         let mut project_dir = if pre_built_enabled {
             let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap())
-                .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
+                .join(format!("Prebuilt-MoltenVK-{}", crate::mac::MOLTEN_VK_VERSION));
 
             download_prebuilt_molten(&target_dir);
 
@@ -225,7 +225,7 @@ fn main() {
             pb
         } else {
             let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap())
-                .join(format!("MoltenVK-{}", crate::mac::VERSION,));
+                .join(format!("MoltenVK-{}", crate::mac::MOLTEN_VK_VERSION,));
             let _target_name = build_molten(&target_dir);
 
             let mut pb = std::path::PathBuf::from(
