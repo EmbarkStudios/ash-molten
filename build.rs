@@ -1,4 +1,5 @@
 #[cfg(any(target_os = "macos", target_os = "ios"))]
+
 mod mac {
     use std::path::Path;
 
@@ -164,7 +165,7 @@ mod mac {
             .stdin(Stdio::from(tr_out))
             .stdout(Stdio::piped())
             .spawn()
-            .expect("Couldn't launch cut")
+            .expect("Couldn't launch xargs")
             .wait_with_output()
             .expect("failed to wait on xargs");
 
@@ -191,11 +192,15 @@ mod mac {
     }
 }
 
+use std::{
+    collections::{hash_map::RandomState, HashMap},
+    iter::FromIterator,
+    path::PathBuf,
+};
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn main() {
     use crate::mac::*;
-    use std::path::{Path, PathBuf};
-
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT");
@@ -205,46 +210,60 @@ fn main() {
         "external and prebuild cannot be active at the same time"
     );
 
-    if !external_enabled && !pre_built_enabled {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
-            .join(format!("MoltenVK-{}", crate::mac::VERSION,));
-        let _target_name = build_molten(&target_dir);
+    if !external_enabled {
+        let mut project_dir = if pre_built_enabled {
+            let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap())
+                .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
 
-        let project_dir = {
-            let mut pb = PathBuf::from(
+            download_prebuilt_molten(&target_dir);
+
+            let mut pb = std::path::PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
-            pb.push(format!(
-                "Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
+
+            pb
+        } else {
+            let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap())
+                .join(format!("MoltenVK-{}", crate::mac::VERSION,));
+            let _target_name = build_molten(&target_dir);
+
+            let mut pb = std::path::PathBuf::from(
+                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
+            );
+            pb.push(target_dir);
+            pb.push("Package/Latest/MoltenVK/MoltenVK.xcframework");
 
             pb
         };
 
+        let xcframework =
+            xcframework::XCFramework::parse(&project_dir).expect("Failed to parse XCFramework");
+        let native_libs = xcframework
+            .AvailableLibraries
+            .into_iter()
+            .map(|lib| lib.universal_to_native(project_dir.clone()))
+            .flatten()
+            .map(|lib| {
+                let path = format!("{}/{}", lib.LibraryIdentifier, lib.LibraryPath);
+                (lib.identifier(), PathBuf::from(&path))
+            });
+        let lookup: HashMap<xcframework::Identifier, PathBuf, RandomState> =
+            HashMap::from_iter(native_libs);
+
+        let id = xcframework::Identifier::new(
+            std::env::var("CARGO_CFG_TARGET_ARCH").unwrap().into(),
+            std::env::var("CARGO_CFG_TARGET_OS").unwrap().into(),
+            xcframework::Variant::Default,
+        );
+
+        let lib_path = lookup.get(&id).expect("Library was not found");
+        let lib_dir = lib_path.parent().unwrap();
+        project_dir.push(lib_dir);
+
+        eprintln!("{}", project_dir.display());
         println!("cargo:rustc-link-search=native={}", project_dir.display());
-    } else if pre_built_enabled {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
-            .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
-
-        download_prebuilt_molten(&target_dir);
-
-        let project_dir = {
-            let mut pb = PathBuf::from(
-                std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
-            );
-            pb.push(target_dir);
-            pb.push(format!(
-                "{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
-
-            pb
-        };
-        println!("cargo:rustc-link-search=native={}", project_dir.display());
+        println!("cargo:rustc-link-lib=static=MoltenVK");
     }
 
     println!("cargo:rustc-link-lib=framework=Metal");
@@ -253,7 +272,6 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=IOKit");
     println!("cargo:rustc-link-lib=framework=IOSurface");
     println!("cargo:rustc-link-lib=dylib=c++");
-    println!("cargo:rustc-link-lib=static=MoltenVK");
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
