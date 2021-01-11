@@ -212,8 +212,9 @@ fn main() {
 
     if !external_enabled {
         let mut project_dir = if pre_built_enabled {
-            let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap())
-                .join(format!("Prebuilt-MoltenVK-{}", crate::mac::MOLTEN_VK_VERSION));
+            let target_dir = std::path::Path::new(&std::env::var("OUT_DIR").unwrap()).join(
+                format!("Prebuilt-MoltenVK-{}", crate::mac::MOLTEN_VK_VERSION),
+            );
 
             download_prebuilt_molten(&target_dir);
 
