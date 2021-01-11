@@ -248,9 +248,8 @@ fn main() {
             .map(|lib| {
                 let path = format!("{}/{}", lib.LibraryIdentifier, lib.LibraryPath);
                 (lib.identifier(), PathBuf::from(&path))
-            });
-        let lookup: HashMap<xcframework::Identifier, PathBuf, RandomState> =
-            HashMap::from_iter(native_libs);
+            })
+            .collect::<HashMap<xcframework::Identifier, PathBuf, RandomState>>();
 
         let id = xcframework::Identifier::new(
             std::env::var("CARGO_CFG_TARGET_ARCH").unwrap().into(),
@@ -258,7 +257,7 @@ fn main() {
             xcframework::Variant::Default,
         );
 
-        let lib_path = lookup.get(&id).expect("Library was not found");
+        let lib_path = native_libs.get(&id).expect("Library was not found");
         let lib_dir = lib_path.parent().unwrap();
         project_dir.push(lib_dir);
 
