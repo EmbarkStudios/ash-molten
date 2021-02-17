@@ -7,6 +7,16 @@ mod mac {
 
     // MoltenVK git tagged release to use
     pub static MOLTEN_VK_VERSION: &str = "1.1.1";
+    pub static MOLTEN_VK_PATCH: Option<&str> = Some("4a0a5cd");
+
+    // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
+    pub(crate) fn get_artifact_tag() -> String {
+        if let Some(patch) = MOLTEN_VK_PATCH {
+            format!("{}#{}", MOLTEN_VK_VERSION, patch)
+        } else {
+            MOLTEN_VK_VERSION.to_owned()
+        }
+    }
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
@@ -34,7 +44,7 @@ mod mac {
         };
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", MOLTEN_VK_VERSION));
+            .join(format!("MoltenVK-{}", get_artifact_tag()));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -62,12 +72,15 @@ mod mac {
                 .wait()
                 .expect("failed to pull MoltenVK")
         } else {
+            let branch = format!("v{}", MOLTEN_VK_VERSION.to_owned());
+            let clone_args = if MOLTEN_VK_PATCH.is_none() {
+                vec!["--branch", branch.as_str(), "--depth", "1"]
+            } else {
+                vec![] // Can't specify branch or use depth if you switch to a different commit hash later.
+            };
             Command::new("git")
                 .arg("clone")
-                .arg("--branch")
-                .arg(format!("v{}", MOLTEN_VK_VERSION.to_owned()))
-                .arg("--depth")
-                .arg("1")
+                .args(clone_args)
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .arg(&checkout_dir)
                 .spawn()
@@ -77,6 +90,17 @@ mod mac {
         };
 
         assert!(git_status.success(), "failed to get MoltenVK");
+
+        if let Some(patch) = MOLTEN_VK_PATCH {
+            let git_status = Command::new("git")
+                .current_dir(&checkout_dir)
+                .arg("checkout")
+                .arg(patch)
+                .status()
+                .expect("failed to spawn git");
+
+            assert!(git_status.success(), "failed to checkout patch");
+        }
 
         // These (currently) match the identifiers used by moltenvk
         let (target_name, _dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
@@ -127,7 +151,7 @@ mod mac {
             .arg("-s")
             .arg(format!(
                 "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
-                MOLTEN_VK_VERSION
+                get_artifact_tag()
             ))
             .stdout(Stdio::piped())
             .spawn()
@@ -218,7 +242,7 @@ fn main() {
         let mut project_dir = if pre_built_enabled {
             let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
                 "Prebuilt-MoltenVK-{}",
-                crate::mac::MOLTEN_VK_VERSION
+                crate::mac::get_artifact_tag()
             ));
 
             download_prebuilt_molten(&target_dir);
@@ -231,7 +255,7 @@ fn main() {
             pb
         } else {
             let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
-                .join(format!("MoltenVK-{}", crate::mac::MOLTEN_VK_VERSION,));
+                .join(format!("MoltenVK-{}", crate::mac::get_artifact_tag()));
             let _target_name = build_molten(&target_dir);
 
             let mut pb = PathBuf::from(
