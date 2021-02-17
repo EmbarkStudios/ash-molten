@@ -63,22 +63,27 @@ mod mac {
             }
         });
 
-        let git_status = if Path::new(&checkout_dir).exists() {
-            Command::new("git")
-                .current_dir(&checkout_dir)
-                .arg("pull")
-                .spawn()
-                .expect("failed to spawn git")
-                .wait()
-                .expect("failed to pull MoltenVK")
+        if Path::new(&checkout_dir).exists() {
+            // Don't pull if a specific hash has been checkedout
+            if MOLTEN_VK_PATCH.is_none() {
+                let git_status = Command::new("git")
+                    .current_dir(&checkout_dir)
+                    .arg("pull")
+                    .spawn()
+                    .expect("failed to spawn git")
+                    .wait()
+                    .expect("failed to pull MoltenVK");
+
+                assert!(git_status.success(), "failed to get MoltenVK");
+            }
         } else {
             let branch = format!("v{}", MOLTEN_VK_VERSION.to_owned());
             let clone_args = if MOLTEN_VK_PATCH.is_none() {
                 vec!["--branch", branch.as_str(), "--depth", "1"]
             } else {
-                vec![] // Can't specify branch or use depth if you switch to a different commit hash later.
+                vec!["--single-branch", "--branch", "master"] // Can't specify depth if you switch to a different commit hash later.
             };
-            Command::new("git")
+            let git_status = Command::new("git")
                 .arg("clone")
                 .args(clone_args)
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
@@ -86,10 +91,10 @@ mod mac {
                 .spawn()
                 .expect("failed to spawn git")
                 .wait()
-                .expect("failed to clone MoltenVK")
-        };
+                .expect("failed to clone MoltenVK");
 
-        assert!(git_status.success(), "failed to get MoltenVK");
+            assert!(git_status.success(), "failed to get MoltenVK");
+        };
 
         if let Some(patch) = MOLTEN_VK_PATCH {
             let git_status = Command::new("git")
