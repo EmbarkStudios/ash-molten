@@ -156,7 +156,7 @@ mod mac {
             .arg("-s")
             .arg(format!(
                 "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
-                get_artifact_tag()
+                get_artifact_tag().replace("#", "%23")
             ))
             .stdout(Stdio::piped())
             .spawn()
