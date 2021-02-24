@@ -73,7 +73,7 @@ To update the prebuilt version uses, change the following:
 - Download the MoltenVK XCFramework from, for example, the Vulkan SDK for Mac or build [MoltenVK](https://github.com/KhronosGroup/MoltenVK/) yourself.
   - in the case of downloading it from an external source make sure MoltenVK version matches `static VERSION`.
 - From the XCFramework folder, from the built version of MoltenVK, zip the folders of platforms that need to be supported individually.
-- Create a release with the following tag MoltenVK-{version number}.
+- Create a release with the tag: MoltenVK-{version number}.
 - Upload the zip files to the release with the MoltenVK-{version number} tag.
 
 ## Contributing
