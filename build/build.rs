@@ -1,9 +1,22 @@
+mod xcframework;
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
+
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static VERSION: &str = "1.1.0";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.2";
+    pub static MOLTEN_VK_PATCH: Option<&str> = Some("f28ab1c");
+
+    // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
+    pub(crate) fn get_artifact_tag() -> String {
+        if let Some(patch) = MOLTEN_VK_PATCH {
+            format!("{}#{}", MOLTEN_VK_VERSION, patch)
+        } else {
+            MOLTEN_VK_VERSION.to_owned()
+        }
+    }
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // enviroment
@@ -31,7 +44,7 @@ mod mac {
         };
 
         let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", VERSION));
+            .join(format!("MoltenVK-{}", get_artifact_tag()));
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -50,30 +63,49 @@ mod mac {
             }
         });
 
-        let git_status = if Path::new(&checkout_dir).exists() {
-            Command::new("git")
-                .current_dir(&checkout_dir)
-                .arg("pull")
-                .spawn()
-                .expect("failed to spawn git")
-                .wait()
-                .expect("failed to pull MoltenVK")
+        if Path::new(&checkout_dir).exists() {
+            // Don't pull if a specific hash has been checkedout
+            if MOLTEN_VK_PATCH.is_none() {
+                let git_status = Command::new("git")
+                    .current_dir(&checkout_dir)
+                    .arg("pull")
+                    .spawn()
+                    .expect("failed to spawn git")
+                    .wait()
+                    .expect("failed to pull MoltenVK");
+
+                assert!(git_status.success(), "failed to get MoltenVK");
+            }
         } else {
-            Command::new("git")
+            let branch = format!("v{}", MOLTEN_VK_VERSION.to_owned());
+            let clone_args = if MOLTEN_VK_PATCH.is_none() {
+                vec!["--branch", branch.as_str(), "--depth", "1"]
+            } else {
+                vec!["--single-branch", "--branch", "master"] // Can't specify depth if you switch to a different commit hash later.
+            };
+            let git_status = Command::new("git")
                 .arg("clone")
-                .arg("--branch")
-                .arg(format!("v{}", VERSION.to_owned()))
-                .arg("--depth")
-                .arg("1")
+                .args(clone_args)
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .arg(&checkout_dir)
                 .spawn()
                 .expect("failed to spawn git")
                 .wait()
-                .expect("failed to clone MoltenVK")
+                .expect("failed to clone MoltenVK");
+
+            assert!(git_status.success(), "failed to get MoltenVK");
         };
 
-        assert!(git_status.success(), "failed to get MoltenVK");
+        if let Some(patch) = MOLTEN_VK_PATCH {
+            let git_status = Command::new("git")
+                .current_dir(&checkout_dir)
+                .arg("checkout")
+                .arg(patch)
+                .status()
+                .expect("failed to spawn git");
+
+            assert!(git_status.success(), "failed to checkout patch");
+        }
 
         // These (currently) match the identifiers used by moltenvk
         let (target_name, _dir) = match std::env::var("CARGO_CFG_TARGET_OS") {
@@ -124,7 +156,7 @@ mod mac {
             .arg("-s")
             .arg(format!(
                 "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
-                VERSION
+                get_artifact_tag().replace("#", "%23")
             ))
             .stdout(Stdio::piped())
             .spawn()
@@ -155,7 +187,7 @@ mod mac {
             .stdin(Stdio::from(cut_out))
             .stdout(Stdio::piped())
             .spawn()
-            .expect("Couldn't launch cut");
+            .expect("Couldn't launch tr");
 
         let tr_out = tr.stdout.expect("Failed to open grep stdout");
 
@@ -164,7 +196,7 @@ mod mac {
             .stdin(Stdio::from(tr_out))
             .stdout(Stdio::piped())
             .spawn()
-            .expect("Couldn't launch cut")
+            .expect("Couldn't launch xargs")
             .wait_with_output()
             .expect("failed to wait on xargs");
 
@@ -191,59 +223,78 @@ mod mac {
     }
 }
 
+use std::{
+    collections::{hash_map::RandomState, HashMap},
+    path::{Path, PathBuf},
+};
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn main() {
     use crate::mac::*;
-    use std::path::{Path, PathBuf};
-
     // The 'external' feature was not enabled. Molten will be built automaticaly.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT");
+
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     assert!(
         !(external_enabled && pre_built_enabled),
         "external and prebuild cannot be active at the same time"
     );
 
-    if !external_enabled && !pre_built_enabled {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
-            .join(format!("MoltenVK-{}", crate::mac::VERSION,));
-        let _target_name = build_molten(&target_dir);
+    if !external_enabled {
+        let mut project_dir = if pre_built_enabled {
+            let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
+                "Prebuilt-MoltenVK-{}",
+                crate::mac::get_artifact_tag()
+            ));
 
-        let project_dir = {
+            download_prebuilt_molten(&target_dir);
+
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
-            pb.push(format!(
-                "Package/Latest/MoltenVK/MoltenVK.xcframework/{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
-
+            pb.push("MoltenVK.xcframework");
             pb
-        };
+        } else {
+            let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
+                .join(format!("MoltenVK-{}", crate::mac::get_artifact_tag()));
+            let _target_name = build_molten(&target_dir);
 
-        println!("cargo:rustc-link-search=native={}", project_dir.display());
-    } else if pre_built_enabled {
-        let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
-            .join(format!("Prebuilt-MoltenVK-{}", crate::mac::VERSION));
-
-        download_prebuilt_molten(&target_dir);
-
-        let project_dir = {
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
             pb.push(target_dir);
-            pb.push(format!(
-                "{}-{}",
-                std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
-                std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
-            ));
+            pb.push("Package/Latest/MoltenVK/MoltenVK.xcframework");
 
             pb
         };
+
+        let xcframework =
+            xcframework::XcFramework::parse(&project_dir).expect("Failed to parse XCFramework");
+        let native_libs = xcframework
+            .AvailableLibraries
+            .into_iter()
+            .map(|lib| {
+                lib.universal_to_native(project_dir.clone())
+                    .expect("Failed to get native library")
+            })
+            .flatten()
+            .map(|lib| (lib.identifier(), lib.path()))
+            .collect::<HashMap<xcframework::Identifier, PathBuf, RandomState>>();
+
+        let id = xcframework::Identifier::new(
+            target_arch.into(),
+            target_os.into(),
+            xcframework::Variant::Default,
+        );
+
+        let lib_path = native_libs.get(&id).expect("Library was not found");
+        let lib_dir = lib_path.parent().unwrap();
+        project_dir.push(lib_dir);
+
         println!("cargo:rustc-link-search=native={}", project_dir.display());
     }
 
