@@ -159,7 +159,7 @@ mod mac {
                 get_artifact_tag().replace("#", "%23")
             ))
             .stdout(Stdio::piped())
-            .status()
+            .spawn()
             .expect("Couldn't launch curl");
 
         let curl_out = curl.stdout.expect("Failed to open curl stdout");
@@ -168,7 +168,7 @@ mod mac {
             .arg("browser_download_url.*zip")
             .stdin(Stdio::from(curl_out))
             .stdout(Stdio::piped())
-            .status()
+            .spawn()
             .expect("Couldn't launch grep");
 
         let grep_out = grep.stdout.expect("Failed to open grep stdout");
@@ -177,7 +177,7 @@ mod mac {
             .args(&["-d", ":", "-f", "2,3"])
             .stdin(Stdio::from(grep_out))
             .stdout(Stdio::piped())
-            .status()
+            .spawn()
             .expect("Couldn't launch cut");
 
         let cut_out = cut.stdout.expect("Failed to open grep stdout");
@@ -186,7 +186,7 @@ mod mac {
             .args(&["-d", "\""])
             .stdin(Stdio::from(cut_out))
             .stdout(Stdio::piped())
-            .status()
+            .spawn()
             .expect("Couldn't launch tr");
 
         let tr_out = tr.stdout.expect("Failed to open grep stdout");
@@ -195,7 +195,7 @@ mod mac {
             .args(&["-n", "1", "curl", "-LO", "--silent"])
             .stdin(Stdio::from(tr_out))
             .stdout(Stdio::piped())
-            .status()
+            .spawn()
             .expect("Couldn't launch xargs")
             .wait_with_output()
             .expect("failed to wait on xargs");
@@ -210,7 +210,7 @@ mod mac {
                     .arg(path.to_owned())
                     .arg("-x")
                     .arg("__MACOSX/*")
-                    .status()
+                    .spawn()
                     .expect("Couldn't launch unzip")
                     .wait()
                     .expect("failed to wait on unzip");
