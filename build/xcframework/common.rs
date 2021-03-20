@@ -33,8 +33,7 @@ impl<T: AsRef<str>> From<T> for Arch {
         match arch.as_ref() {
             "x86_64" => Arch::Amd64,
             "x86" => Arch::X86,
-            "arm64" => Arch::Arm64,
-            "aarch64" => Arch::Arm64,
+            "arm64" | "aarch64" => Arch::Arm64,
             "arm64e" => Arch::Arm64e,
             _ => Arch::Unknown,
         }
