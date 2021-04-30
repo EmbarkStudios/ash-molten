@@ -70,7 +70,9 @@
 // crate-specific exceptions:
 #![allow(unsafe_code)]
 
-use ash::{version::EntryV1_0, vk, Instance, InstanceError, RawPtr};
+use std::ops::Deref;
+
+use ash::{vk, EntryCustom};
 
 extern "system" {
     fn vkGetInstanceProcAddr(
@@ -79,62 +81,28 @@ extern "system" {
     ) -> vk::PFN_vkVoidFunction;
 }
 
-extern "system" fn get_instance_proc_addr(
-    instance: vk::Instance,
-    p_name: *const std::os::raw::c_char,
-) -> vk::PFN_vkVoidFunction {
-    unsafe { vkGetInstanceProcAddr(instance, p_name) }
-}
-
 /// The entry point for the statically linked molten library
-pub struct MoltenEntry {
-    static_fn: vk::StaticFn,
-    entry_fn_1_0: vk::EntryFnV1_0,
-}
+pub struct MoltenEntry(EntryCustom<()>);
 
 impl MoltenEntry {
-    /// Fetches the function pointer to `get_instance_proc_addr` which is statically linked. This
-    /// function can not fail.
-    pub fn load() -> Result<MoltenEntry, ash::LoadingError> {
-        let static_fn = vk::StaticFn {
-            get_instance_proc_addr,
-        };
-
-        let entry_fn_1_0 = vk::EntryFnV1_0::load(|name| unsafe {
-            std::mem::transmute(
-                static_fn.get_instance_proc_addr(vk::Instance::null(), name.as_ptr()),
-            )
-        });
-
-        Ok(MoltenEntry {
-            static_fn,
-            entry_fn_1_0,
-        })
+    /// Fetches the function pointer to `vkGetInstanceProcAddr` which is statically linked.
+    pub fn load() -> Self {
+        Self(
+            EntryCustom::new_custom((), |(), name| {
+                assert_eq!(name.to_bytes_with_nul(), b"vkGetInstanceProcAddr\0");
+                vkGetInstanceProcAddr as _
+            })
+            // This can never fail because we always return the address of
+            // `vkGetInstanceProcAddr` from the closure:
+            .unwrap(),
+        )
     }
 }
-impl EntryV1_0 for MoltenEntry {
-    type Instance = Instance;
-    #[doc = "<https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/vkCreateInstance.html>"]
-    unsafe fn create_instance(
-        &self,
-        create_info: &vk::InstanceCreateInfo,
-        allocation_callbacks: Option<&vk::AllocationCallbacks>,
-    ) -> Result<Self::Instance, InstanceError> {
-        let mut instance: vk::Instance = vk::Instance::null();
-        let err_code = self.fp_v1_0().create_instance(
-            create_info,
-            allocation_callbacks.as_raw_ptr(),
-            &mut instance,
-        );
-        if err_code != vk::Result::SUCCESS {
-            return Err(InstanceError::VkError(err_code));
-        }
-        Ok(Instance::load(&self.static_fn, instance))
-    }
-    fn fp_v1_0(&self) -> &vk::EntryFnV1_0 {
-        &self.entry_fn_1_0
-    }
-    fn static_fn(&self) -> &vk::StaticFn {
-        &self.static_fn
+
+impl Deref for MoltenEntry {
+    type Target = EntryCustom<()>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
