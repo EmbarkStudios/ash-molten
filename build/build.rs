@@ -58,6 +58,7 @@ mod xcframework;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
 
+    use serde::Deserialize;
     use std::path::Path;
 
     // MoltenVK git tagged release to use
@@ -203,78 +204,82 @@ mod mac {
 
         std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
 
-        let previous_path = std::env::current_dir().expect("Couldn't get current directory");
-
-        std::env::set_current_dir(&target_dir).expect("Couldn't change current directory");
-
-        let curl = Command::new("curl")
+        let curl_out = Command::new("curl")
             .arg("-s")
             .arg(format!(
                 "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
                 get_artifact_tag().replace("#", "%23")
             ))
             .stdout(Stdio::piped())
-            .spawn()
+            .output()
             .expect("Couldn't launch curl");
+        let json_string = String::from_utf8_lossy(&curl_out.stdout);
+        assert!(
+            curl_out.status.success(),
+            "Curl failed. stdout:\n{}\nstderr:\n{}",
+            json_string,
+            String::from_utf8_lossy(&curl_out.stderr)
+        );
 
-        let curl_out = curl.stdout.expect("Failed to open curl stdout");
+        #[derive(Deserialize)]
+        struct Data {
+            assets: Vec<Asset>,
+        }
+        #[derive(Deserialize, Debug)]
+        struct Asset {
+            browser_download_url: String,
+        }
+        let json_data: Data = match serde_json::from_str(&json_string) {
+            Ok(data) => data,
+            Err(err) => panic!("Couldn't parse json output ({}):\n{}", err, json_string),
+        };
+        assert_eq!(
+            json_data.assets.len(),
+            1,
+            "json did not have 1 asset: {:?}\n{}",
+            json_data.assets,
+            json_string
+        );
+        let download_url = &json_data.assets[0].browser_download_url;
+        let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
-        let grep = Command::new("grep")
-            .arg("browser_download_url.*zip")
-            .stdin(Stdio::from(curl_out))
-            .stdout(Stdio::piped())
+        let curl_status = Command::new("curl")
+            .args(&["--location", "--silent", download_url, "-o"])
+            .arg(&download_path)
             .spawn()
-            .expect("Couldn't launch grep");
+            .expect("Couldn't launch curl")
+            .wait()
+            .expect("failed to wait on curl");
 
-        let grep_out = grep.stdout.expect("Failed to open grep stdout");
+        assert!(curl_status.success());
 
-        let cut = Command::new("cut")
-            .args(&["-d", ":", "-f", "2,3"])
-            .stdin(Stdio::from(grep_out))
-            .stdout(Stdio::piped())
+        let unzip_status = Command::new("unzip")
+            .arg("-o")
+            .arg(&download_path)
+            .arg("-x")
+            .arg("__MACOSX/*")
+            .arg("-d")
+            .arg(target_dir.as_ref())
             .spawn()
-            .expect("Couldn't launch cut");
+            .expect("Couldn't launch unzip")
+            .wait()
+            .expect("failed to wait on unzip");
 
-        let cut_out = cut.stdout.expect("Failed to open grep stdout");
-
-        let tr = Command::new("tr")
-            .args(&["-d", "\""])
-            .stdin(Stdio::from(cut_out))
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("Couldn't launch tr");
-
-        let tr_out = tr.stdout.expect("Failed to open grep stdout");
-
-        let output = Command::new("xargs")
-            .args(&["-n", "1", "curl", "-LO", "--silent"])
-            .stdin(Stdio::from(tr_out))
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("Couldn't launch xargs")
-            .wait_with_output()
-            .expect("failed to wait on xargs");
-
-        assert!(output.status.success());
-
-        for path in std::fs::read_dir(&target_dir).expect("Couldn't read dir") {
-            let path = path.unwrap().path();
-            if let Some("zip") = path.extension().and_then(std::ffi::OsStr::to_str) {
-                let status = Command::new("unzip")
-                    .arg("-o")
-                    .arg(path.to_owned())
-                    .arg("-x")
-                    .arg("__MACOSX/*")
-                    .spawn()
-                    .expect("Couldn't launch unzip")
-                    .wait()
-                    .expect("failed to wait on unzip");
-
-                assert!(status.success());
+        if !unzip_status.success() {
+            let bytes = std::fs::read(download_path)
+                .expect("unzip failed, and further, could not open output zip file");
+            match std::str::from_utf8(&bytes) {
+                Ok(string) => {
+                    panic!(
+                        "Could not unzip MoltenVK.xcframework.zip. File was utf8, perhaps an error?\n{}",
+                        string
+                    );
+                }
+                Err(_) => {
+                    panic!("Could not unzip MoltenVK.xcframework.zip");
+                }
             }
         }
-
-        std::env::set_current_dir(&previous_path).expect("Couldn't change current directory");
     }
 }
 
