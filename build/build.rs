@@ -58,7 +58,6 @@ mod xcframework;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
 
-    use serde::Deserialize;
     use std::path::Path;
 
     // MoltenVK git tagged release to use
@@ -200,51 +199,18 @@ mod mac {
     }
 
     pub(crate) fn download_prebuilt_molten<P: AsRef<Path>>(target_dir: &P) {
-        use std::process::{Command, Stdio};
+        use std::process::Command;
 
         std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
 
-        let curl_out = Command::new("curl")
-            .arg("-s")
-            .arg(format!(
-                "https://api.github.com/repos/EmbarkStudios/ash-molten/releases/tags/MoltenVK-{}",
-                get_artifact_tag().replace("#", "%23")
-            ))
-            .stdout(Stdio::piped())
-            .output()
-            .expect("Couldn't launch curl");
-        let json_string = String::from_utf8_lossy(&curl_out.stdout);
-        assert!(
-            curl_out.status.success(),
-            "Curl failed. stdout:\n{}\nstderr:\n{}",
-            json_string,
-            String::from_utf8_lossy(&curl_out.stderr)
+        let download_url = format!(
+            "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
+            get_artifact_tag().replace("#", "%23")
         );
-
-        #[derive(Deserialize)]
-        struct Data {
-            assets: Vec<Asset>,
-        }
-        #[derive(Deserialize, Debug)]
-        struct Asset {
-            browser_download_url: String,
-        }
-        let json_data: Data = match serde_json::from_str(&json_string) {
-            Ok(data) => data,
-            Err(err) => panic!("Couldn't parse json output ({}):\n{}", err, json_string),
-        };
-        assert_eq!(
-            json_data.assets.len(),
-            1,
-            "json did not have 1 asset: {:?}\n{}",
-            json_data.assets,
-            json_string
-        );
-        let download_url = &json_data.assets[0].browser_download_url;
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
         let curl_status = Command::new("curl")
-            .args(&["--location", "--silent", download_url, "-o"])
+            .args(&["--location", "--silent", &download_url, "-o"])
             .arg(&download_path)
             .spawn()
             .expect("Couldn't launch curl")
