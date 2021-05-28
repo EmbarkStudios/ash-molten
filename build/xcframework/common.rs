@@ -14,6 +14,7 @@ pub enum Arch {
 #[serde(from = "String")]
 pub enum Platform {
     MacOS,
+    #[allow(clippy::upper_case_acronyms)]
     IOS,
     TvOS,
     WatchOS,
