@@ -91,7 +91,7 @@ mod mac {
     }
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
-    // enviroment
+    // environment
     pub(crate) fn is_feature_enabled(feature: &str) -> bool {
         std::env::vars()
             .filter_map(|(flag, _)| {
@@ -136,7 +136,7 @@ mod mac {
         });
 
         if Path::new(&checkout_dir).exists() {
-            // Don't pull if a specific hash has been checkedout
+            // Don't pull if a specific hash has been checked out
             if MOLTEN_VK_PATCH.is_none() {
                 let git_status = Command::new("git")
                     .current_dir(&checkout_dir)
@@ -186,7 +186,7 @@ mod mac {
                 "ios" => ("ios", "iOS"),
                 target => panic!("unknown target '{}'", target),
             },
-            Err(e) => panic!("failed to determinte target os '{}'", e),
+            Err(e) => panic!("failed to determine target os '{}'", e),
         };
 
         let status = Command::new("sh")
@@ -274,7 +274,7 @@ use std::{
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn main() {
     use crate::mac::*;
-    // The 'external' feature was not enabled. Molten will be built automaticaly.
+    // The 'external' feature was not enabled. Molten will be built automatically.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT");
 
@@ -283,7 +283,7 @@ fn main() {
 
     assert!(
         !(external_enabled && pre_built_enabled),
-        "external and prebuild cannot be active at the same time"
+        "external and prebuilt cannot be active at the same time"
     );
 
     if !external_enabled {
