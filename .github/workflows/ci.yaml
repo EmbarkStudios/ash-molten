@@ -1,4 +1,9 @@
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 name: CI
 jobs:
   lint:
@@ -7,28 +12,23 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
       # make sure all code has been formatted with rustfmt
       - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check --color always
+      - run: cargo fmt --all -- --check --color always
       # run clippy to verify we have no warnings
       - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --features pre-built -- -D warnings
+      - run: cargo fetch --target x86_64-apple-darwin
+      - run: cargo clippy --features pre-built -- -D warnings
 
   cargo-deny:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: EmbarkStudios/cargo-deny-action@v1
 
   test-source:
@@ -37,14 +37,13 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
+      - run: cargo fetch --target x86_64-apple-darwin
+      - run: cargo build
 
   test:
     name: Test (pre-built)
@@ -52,12 +51,10 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose --features pre-built
+      - run: cargo fetch --target x86_64-apple-darwin
+      - run: cargo build --verbose --features pre-built
