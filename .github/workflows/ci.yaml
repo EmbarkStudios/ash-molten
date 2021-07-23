@@ -22,7 +22,7 @@ jobs:
       - run: cargo fmt --all -- --check --color always
       # run clippy to verify we have no warnings
       - run: rustup component add clippy
-      - run: cargo fetch
+      - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo clippy --features pre-built -- -D warnings
 
   cargo-deny:
@@ -42,7 +42,7 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - run: cargo fetch
+      - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build
 
   test:
@@ -56,5 +56,5 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - run: cargo fetch
+      - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build --verbose --features pre-built
