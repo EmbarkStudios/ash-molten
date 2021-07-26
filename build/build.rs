@@ -61,7 +61,7 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.1.2";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.3";
     pub static MOLTEN_VK_PATCH: Option<&str> = Some("f28ab1c");
 
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
