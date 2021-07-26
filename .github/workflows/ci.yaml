@@ -33,7 +33,7 @@ jobs:
 
   test-source:
     name: Test (source build)
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
@@ -47,7 +47,7 @@ jobs:
 
   test:
     name: Test (pre-built)
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.1.app
     steps:
