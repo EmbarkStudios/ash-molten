@@ -183,9 +183,12 @@ mod mac {
 
         assert!(status.success(), "failed to fetchDependencies");
 
+        eprintln!("Running with GCC_PREPROCESSOR_DEFINITIONS=-DMVK_LOGGING_ENABLED=0");
+
         let status = Command::new("make")
             .current_dir(&checkout_dir)
             .arg(target_name)
+            .arg("GCC_PREPROCESSOR_DEFINITIONS=-DMVK_LOGGING_ENABLED=0")
             .spawn()
             .expect("failed to build MoltenVK")
             .wait()
