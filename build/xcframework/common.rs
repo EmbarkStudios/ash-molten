@@ -13,11 +13,10 @@ pub enum Arch {
 #[serde(into = "&'static str")]
 #[serde(from = "String")]
 pub enum Platform {
-    MacOS,
-    #[allow(clippy::upper_case_acronyms)]
-    IOS,
-    TvOS,
-    WatchOS,
+    MacOs,
+    Ios,
+    TvOs,
+    WatchOs,
     Unknown,
 }
 
@@ -56,10 +55,10 @@ impl<'a> From<Arch> for &'a str {
 impl<T: AsRef<str>> From<T> for Platform {
     fn from(platform: T) -> Self {
         match platform.as_ref() {
-            "tvos" => Platform::TvOS,
-            "macos" => Platform::MacOS,
-            "ios" => Platform::IOS,
-            "watchos" => Platform::WatchOS,
+            "tvos" => Platform::TvOs,
+            "macos" => Platform::MacOs,
+            "ios" => Platform::Ios,
+            "watchos" => Platform::WatchOs,
             _ => Platform::Unknown,
         }
     }
@@ -68,10 +67,10 @@ impl<T: AsRef<str>> From<T> for Platform {
 impl<'a> From<Platform> for &'a str {
     fn from(platform: Platform) -> Self {
         match platform {
-            Platform::TvOS => "tvos",
-            Platform::MacOS => "macos",
-            Platform::IOS => "ios",
-            Platform::WatchOS => "watchos",
+            Platform::TvOs => "tvos",
+            Platform::MacOs => "macos",
+            Platform::Ios => "ios",
+            Platform::WatchOs => "watchos",
             Platform::Unknown => "",
         }
     }
