@@ -13,15 +13,15 @@ Requires Xcode 12 and Mac OS 10.15 (Catalina) to compile.
 
 ## Why?
 
-* You want to compile down to a single binary that doesn't need any enviroment variables to bet set.
+* You want to compile down to a single binary that doesn't need any environment variables to bet set.
 
 * You just want to try out [MoltenVK](https://github.com/KhronosGroup/MoltenVK) without needing to setup the SDK.
 
 ## Why not?
 
-* [ash](https://github.com/MaikKlein/ash) already supports [MoltenVK](https://github.com/KhronosGroup/MoltenVK) via runtime linking. Runtime linking is the prefered way of using Vulkan because the loader can be updated at anytime without needing to recompile.
+* [ash](https://github.com/MaikKlein/ash) already supports [MoltenVK](https://github.com/KhronosGroup/MoltenVK) via runtime linking. Runtime linking is the preferred way of using Vulkan because the loader can be updated at anytime without needing to recompile.
 
-* `ash-molten` doesn't have access to the validation layers and thefore can not output any debug information.
+* `ash-molten` doesn't have access to the validation layers and therefore can not output any debug information.
 
 ## How?
 
@@ -62,7 +62,7 @@ To update the version of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) us
 - In `build.rs`, change `static VERSION = "1.1.0"` to the new [MoltenVK release](https://github.com/KhronosGroup/MoltenVK/releases) tag name
 - Update the crate version in `Cargo.toml`
   - Bump the patch version
-  - Set the version metadata to the MoltenVK release. 
+  - Set the version metadata to the MoltenVK release.
   - E.g. `0.2.0+37` -> `0.2.1+38`.
 
 ### Updating pre-built version
