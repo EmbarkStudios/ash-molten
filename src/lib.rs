@@ -70,9 +70,7 @@
 // crate-specific exceptions:
 #![allow(unsafe_code)]
 
-use std::ops::Deref;
-
-use ash::{vk, EntryCustom};
+use ash::{vk, Entry};
 
 extern "system" {
     fn vkGetInstanceProcAddr(
@@ -81,28 +79,10 @@ extern "system" {
     ) -> vk::PFN_vkVoidFunction;
 }
 
-/// The entry point for the statically linked molten library
-pub struct MoltenEntry(EntryCustom<()>);
-
-impl MoltenEntry {
-    /// Fetches the function pointer to `vkGetInstanceProcAddr` which is statically linked.
-    pub fn load() -> Self {
-        Self(
-            EntryCustom::new_custom((), |(), name| {
-                assert_eq!(name.to_bytes_with_nul(), b"vkGetInstanceProcAddr\0");
-                vkGetInstanceProcAddr as _
-            })
-            // This can never fail because we always return the address of
-            // `vkGetInstanceProcAddr` from the closure:
-            .unwrap(),
-        )
-    }
-}
-
-impl Deref for MoltenEntry {
-    type Target = EntryCustom<()>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
+/// Fetches the function pointer to `vkGetInstanceProcAddr` which is statically linked.
+pub fn load() -> Entry {
+    let static_fn = vk::StaticFn {
+        get_instance_proc_addr: vkGetInstanceProcAddr,
+    };
+    unsafe { Entry::from_static_fn(static_fn) }
 }
