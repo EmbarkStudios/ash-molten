@@ -74,7 +74,7 @@ use ash::vk;
 use std::ffi::CString;
 fn main() {
     unsafe {
-        let entry = ash_molten::MoltenEntry::load();
+        let entry = ash_molten::load();
         let app_name = CString::new("Hello Static Molten").unwrap();
 
         let appinfo = vk::ApplicationInfo::builder()
