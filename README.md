@@ -13,7 +13,7 @@ Requires Xcode 12 and Mac OS 10.15 (Catalina) to compile.
 
 ## Why?
 
-* You want to compile down to a single binary that doesn't need any environment variables to bet set.
+* You want to compile down to a single binary that doesn't need any environment variables to be set.
 
 * You just want to try out [MoltenVK](https://github.com/KhronosGroup/MoltenVK) without needing to setup the SDK.
 
