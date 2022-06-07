@@ -222,7 +222,7 @@ mod mac {
 
         let download_url = format!(
             "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
-            get_artifact_tag().replace("#", "%23")
+            get_artifact_tag().replace('#', "%23")
         );
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
