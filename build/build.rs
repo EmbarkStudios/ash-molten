@@ -78,7 +78,7 @@ mod mac {
     use std::path::Path;
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.1.5";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.10";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
 
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
@@ -222,7 +222,7 @@ mod mac {
 
         let download_url = format!(
             "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
-            get_artifact_tag().replace("#", "%23")
+            get_artifact_tag().replace('#', "%23")
         );
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 

@@ -1,3 +1,6 @@
+<!-- markdownlint-disable-file MD004 -->
+<!-- markdownlint-disable-file MD034 -->
+
 # 🌋 ash-molten
 
 [![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](https://embark.dev)
@@ -41,6 +44,7 @@ let instance = entry.create_instance(&create_info, None).expect("Instance");
 let devices = instance.enumerate_physical_devices();
 println!("{:?}", devices);
 ```
+
 You can run the example with `cargo run`.
 
 ## How does it work?
@@ -63,11 +67,12 @@ To update the version of [MoltenVK](https://github.com/KhronosGroup/MoltenVK) us
 - Update the crate version in `Cargo.toml`
   - Bump the patch version
   - Set the version metadata to the MoltenVK release.
-  - E.g. `0.2.0+37` -> `0.2.1+38`.
+  - E.g. `0.2.0+1.1.9` -> `0.2.1+1.1.10`.
+- Before you can submit the PR, you must also update the prebuilt version. See the next section.
 
 ### Updating pre-built version
 
-To update the prebuilt version uses, change the following:
+To update the prebuilt version of MoltenVK that ash-molten uses, change the following:
 
 - Follow the steps mentioned above.
 - Download the MoltenVK XCFramework from, for example, the Vulkan SDK for Mac or build [MoltenVK](https://github.com/KhronosGroup/MoltenVK/) yourself.
