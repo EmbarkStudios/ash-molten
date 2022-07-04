@@ -236,7 +236,7 @@ mod mac {
 
         let download_url = format!(
             "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
-            get_artifact_tag().replace("#", "%23")
+            get_artifact_tag().replace('#', "%23")
         );
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
@@ -338,10 +338,8 @@ fn main() {
             pb
         };
 
-        let xcframework = xcframework::XcFramework::parse(&project_dir).expect(&format!(
-            "Failed to parse XCFramework from {:?}",
-            project_dir
-        ));
+        let xcframework = xcframework::XcFramework::parse(&project_dir)
+            .unwrap_or_else(|_| panic!("Failed to parse XCFramework from {:?}", project_dir));
         let native_libs = xcframework
             .AvailableLibraries
             .into_iter()
