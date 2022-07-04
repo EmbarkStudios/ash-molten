@@ -78,9 +78,16 @@ mod mac {
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.1.8";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.10";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
-    pub static MOLTEN_VK_LOCAL: Option<&str> = Some("/Users/hrydg/dev/MoltenVK");
+
+    // The next two are useful for different kinds of bisection to find bugs.
+    // MOLTEN_VK_LOCAL_BIN lets you specify a local MoltenVK binary directly from a Vulkan SDK, for example.
+    // MOLTEN_VK_LOCAL lets you build directly from a local MoltenVK checkout, in which you can run
+    // a `git bisect`, for example.
+    // TODO: Make it possible to set these by environment variable?
+    pub static MOLTEN_VK_LOCAL_BIN: Option<&str> = None;  // for example, Some("/Users/my_user_name/VulkanSDK/1.3.211.0/MoltenVK")
+    pub static MOLTEN_VK_LOCAL: Option<&str> = None;  // for example, Some("/Users/my_user_name/dev/MoltenVK");
 
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
     pub(crate) fn get_artifact_tag() -> String {
@@ -205,7 +212,7 @@ mod mac {
 
         assert!(status.success(), "failed to fetchDependencies");
 
-        println!("running make. {:?} -> {:?}", checkout_dir, target_name);
+        println!("running make in {:?}", checkout_dir);
 
         let status = Command::new("make")
             .current_dir(&checkout_dir)
@@ -294,10 +301,8 @@ fn main() {
     );
 
     if !external_enabled {
-        let mut project_dir = if false {
-            // Hack to use a prebuilt from a specific SDK version.
-            // For quick bisection only.
-            let mut pb = PathBuf::from("/Users/hrydg/VulkanSDK/1.3.211.0/MoltenVK");
+        let mut project_dir = if let Some(local_bin_path) = MOLTEN_VK_LOCAL_BIN {
+            let mut pb = PathBuf::from(local_bin_path);
             pb.push("MoltenVK.xcframework");
             pb
         } else if pre_built_enabled {
