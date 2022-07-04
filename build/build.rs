@@ -86,8 +86,8 @@ mod mac {
     // MOLTEN_VK_LOCAL lets you build directly from a local MoltenVK checkout, in which you can run
     // a `git bisect`, for example.
     // TODO: Make it possible to set these by environment variable?
-    pub static MOLTEN_VK_LOCAL_BIN: Option<&str> = None;  // for example, Some("/Users/my_user_name/VulkanSDK/1.3.211.0/MoltenVK")
-    pub static MOLTEN_VK_LOCAL: Option<&str> = None;  // for example, Some("/Users/my_user_name/dev/MoltenVK");
+    pub static MOLTEN_VK_LOCAL_BIN: Option<&str> = None; // for example, Some("/Users/my_user_name/VulkanSDK/1.3.211.0/MoltenVK")
+    pub static MOLTEN_VK_LOCAL: Option<&str> = None; // for example, Some("/Users/my_user_name/dev/MoltenVK");
 
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
     pub(crate) fn get_artifact_tag() -> String {
