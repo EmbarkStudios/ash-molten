@@ -75,11 +75,12 @@ mod xcframework;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
 
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.1.10";
+    pub static MOLTEN_VK_VERSION: &str = "1.1.8";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
+    pub static MOLTEN_VK_LOCAL: Option<&str> = Some("/Users/hrydg/dev/MoltenVK");
 
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
     pub(crate) fn get_artifact_tag() -> String {
@@ -106,7 +107,7 @@ mod mac {
             .any(|f| f == feature)
     }
 
-    pub(crate) fn build_molten<P: AsRef<Path>>(_target_dir: &P) -> &'static str {
+    pub(crate) fn build_molten() -> &'static str {
         use std::{
             process::Command,
             sync::{
@@ -115,8 +116,12 @@ mod mac {
             },
         };
 
-        let checkout_dir = Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
-            .join(format!("MoltenVK-{}", get_artifact_tag()));
+        let checkout_dir = if let Some(local_dir) = MOLTEN_VK_LOCAL {
+            PathBuf::from(local_dir)
+        } else {
+            Path::new(&std::env::var("OUT_DIR").expect("Couldn't find OUT_DIR"))
+                .join(format!("MoltenVK-{}", get_artifact_tag()))
+        };
 
         let exit = Arc::new(AtomicBool::new(false));
         let wants_exit = exit.clone();
@@ -137,7 +142,7 @@ mod mac {
 
         if Path::new(&checkout_dir).exists() {
             // Don't pull if a specific hash has been checked out
-            if MOLTEN_VK_PATCH.is_none() {
+            if MOLTEN_VK_PATCH.is_none() && MOLTEN_VK_LOCAL.is_none() {
                 let git_status = Command::new("git")
                     .current_dir(&checkout_dir)
                     .arg("pull")
@@ -146,9 +151,9 @@ mod mac {
                     .wait()
                     .expect("failed to pull MoltenVK");
 
-                assert!(git_status.success(), "failed to get MoltenVK");
+                assert!(git_status.success(), "failed to pull MoltenVK from git");
             }
-        } else {
+        } else if MOLTEN_VK_LOCAL.is_none() {
             let branch = format!("v{}", MOLTEN_VK_VERSION.to_owned());
             let clone_args = if MOLTEN_VK_PATCH.is_none() {
                 vec!["--branch", branch.as_str(), "--depth", "1"]
@@ -165,8 +170,8 @@ mod mac {
                 .wait()
                 .expect("failed to clone MoltenVK");
 
-            assert!(git_status.success(), "failed to get MoltenVK");
-        };
+            assert!(git_status.success(), "failed to clone MoltenVK");
+        }
 
         if let Some(patch) = MOLTEN_VK_PATCH {
             let git_status = Command::new("git")
@@ -200,6 +205,8 @@ mod mac {
 
         assert!(status.success(), "failed to fetchDependencies");
 
+        println!("running make. {:?} -> {:?}", checkout_dir, target_name);
+
         let status = Command::new("make")
             .current_dir(&checkout_dir)
             .arg(target_name)
@@ -222,7 +229,7 @@ mod mac {
 
         let download_url = format!(
             "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
-            get_artifact_tag().replace('#', "%23")
+            get_artifact_tag().replace("#", "%23")
         );
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
@@ -276,7 +283,7 @@ fn main() {
     use crate::mac::*;
     // The 'external' feature was not enabled. Molten will be built automatically.
     let external_enabled = is_feature_enabled("EXTERNAL");
-    let pre_built_enabled = is_feature_enabled("PRE_BUILT");
+    let pre_built_enabled = is_feature_enabled("PRE_BUILT") && MOLTEN_VK_LOCAL.is_none();
 
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
     let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
@@ -287,7 +294,13 @@ fn main() {
     );
 
     if !external_enabled {
-        let mut project_dir = if pre_built_enabled {
+        let mut project_dir = if false {
+            // Hack to use a prebuilt from a specific SDK version.
+            // For quick bisection only.
+            let mut pb = PathBuf::from("/Users/hrydg/VulkanSDK/1.3.211.0/MoltenVK");
+            pb.push("MoltenVK.xcframework");
+            pb
+        } else if pre_built_enabled {
             let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap()).join(format!(
                 "Prebuilt-MoltenVK-{}",
                 crate::mac::get_artifact_tag()
@@ -304,19 +317,26 @@ fn main() {
         } else {
             let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
                 .join(format!("MoltenVK-{}", crate::mac::get_artifact_tag()));
-            let _target_name = build_molten(&target_dir);
+            let _target_name = build_molten();
+            println!("Target dir was {:?}", target_dir);
 
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
             );
-            pb.push(target_dir);
+            if let Some(local) = MOLTEN_VK_LOCAL {
+                pb.push(local);
+            } else {
+                pb.push(target_dir);
+            }
             pb.push("Package/Latest/MoltenVK/MoltenVK.xcframework");
 
             pb
         };
 
-        let xcframework =
-            xcframework::XcFramework::parse(&project_dir).expect("Failed to parse XCFramework");
+        let xcframework = xcframework::XcFramework::parse(&project_dir).expect(&format!(
+            "Failed to parse XCFramework from {:?}",
+            project_dir
+        ));
         let native_libs = xcframework
             .AvailableLibraries
             .into_iter()
