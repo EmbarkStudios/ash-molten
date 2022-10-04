@@ -1,7 +1,7 @@
 [package]
 name = "ash-molten"
 description = "Statically linked MoltenVK for Vulkan on Mac using Ash"
-version = "0.13.0+1.1.10"
+version = "0.13.1+1.1.10"
 authors = ["Embark <opensource@embark-studios.com>", "Maik Klein <maik.klein@embark-studios.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -13,8 +13,15 @@ homepage = "https://github.com/EmbarkStudios/ash-molten"
 documentation = "https://docs.rs/ash-molten"
 build = "build/build.rs"
 
-[dependencies]
-ash = { version = "0.35", default-features = false }
+[dependencies.ash]
+# When breaking changes aren't needed (which is likely because of how little
+# of `ash` is being interfaced with), it's beneficial to keep widening the
+# version range range here, and only bumping `ash-molten`'s *patch* number.
+#
+# NB: you must check that `ash-molten` compiles with every `ash` version
+# in this range, not just the start and the end, to be sure it's compatible.
+version = ">=0.35, <=0.37"
+default-features = false
 
 [build-dependencies]
 anyhow = "1.0"
