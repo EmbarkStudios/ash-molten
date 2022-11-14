@@ -1,75 +1,3 @@
-// BEGIN - Embark standard lints v0.4
-// do not change or add/remove here, but one can add exceptions after this section
-// for more info see: <https://github.com/EmbarkStudios/rust-ecosystem/issues/59>
-#![deny(unsafe_code)]
-#![warn(
-    clippy::all,
-    clippy::await_holding_lock,
-    clippy::char_lit_as_u8,
-    clippy::checked_conversions,
-    clippy::dbg_macro,
-    clippy::debug_assert_with_mut_call,
-    clippy::doc_markdown,
-    clippy::empty_enum,
-    clippy::enum_glob_use,
-    clippy::exit,
-    clippy::expl_impl_clone_on_copy,
-    clippy::explicit_deref_methods,
-    clippy::explicit_into_iter_loop,
-    clippy::fallible_impl_from,
-    clippy::filter_map_next,
-    clippy::float_cmp_const,
-    clippy::fn_params_excessive_bools,
-    clippy::if_let_mutex,
-    clippy::implicit_clone,
-    clippy::imprecise_flops,
-    clippy::inefficient_to_string,
-    clippy::invalid_upcast_comparisons,
-    clippy::large_types_passed_by_value,
-    clippy::let_unit_value,
-    clippy::linkedlist,
-    clippy::lossy_float_literal,
-    clippy::macro_use_imports,
-    clippy::manual_ok_or,
-    clippy::map_err_ignore,
-    clippy::map_flatten,
-    clippy::map_unwrap_or,
-    clippy::match_on_vec_items,
-    clippy::match_same_arms,
-    clippy::match_wildcard_for_single_variants,
-    clippy::mem_forget,
-    clippy::mismatched_target_os,
-    clippy::mut_mut,
-    clippy::mutex_integer,
-    clippy::needless_borrow,
-    clippy::needless_continue,
-    clippy::option_option,
-    clippy::path_buf_push_overwrite,
-    clippy::ptr_as_ptr,
-    clippy::ref_option_ref,
-    clippy::rest_pat_in_fully_bound_structs,
-    clippy::same_functions_in_if_condition,
-    clippy::semicolon_if_nothing_returned,
-    clippy::string_add_assign,
-    clippy::string_add,
-    clippy::string_lit_as_bytes,
-    clippy::string_to_string,
-    clippy::todo,
-    clippy::trait_duplication_in_bounds,
-    clippy::unimplemented,
-    clippy::unnested_or_patterns,
-    clippy::unused_self,
-    clippy::useless_transmute,
-    clippy::verbose_file_reads,
-    clippy::zero_sized_map_values,
-    future_incompatible,
-    nonstandard_style,
-    rust_2018_idioms
-)]
-// END - Embark standard lints v0.4
-// crate-specific exceptions:
-#![allow(unsafe_code)]
-
 mod xcframework;
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -92,7 +20,7 @@ mod mac {
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
     pub(crate) fn get_artifact_tag() -> String {
         if let Some(patch) = MOLTEN_VK_PATCH {
-            format!("{}#{}", MOLTEN_VK_VERSION, patch)
+            format!("{MOLTEN_VK_VERSION}#{patch}")
         } else {
             MOLTEN_VK_VERSION.to_owned()
         }
@@ -104,12 +32,12 @@ mod mac {
         std::env::vars()
             .filter_map(|(flag, _)| {
                 const NAME: &str = "CARGO_FEATURE_";
-                if flag.starts_with(NAME) {
-                    let feature = flag.split(NAME).nth(1).expect("").to_string();
-                    println!("{:?}", feature);
-                    return Some(feature);
+                if let Some(feat) = flag.strip_prefix(NAME) {
+                    println!("{feat:?}");
+                    Some(feat.to_owned())
+                } else {
+                    None
                 }
-                None
             })
             .any(|f| f == feature)
     }
@@ -153,15 +81,13 @@ mod mac {
                 let git_status = Command::new("git")
                     .current_dir(&checkout_dir)
                     .arg("pull")
-                    .spawn()
-                    .expect("failed to spawn git")
-                    .wait()
-                    .expect("failed to pull MoltenVK");
+                    .status()
+                    .expect("failed to spawn git");
 
                 assert!(git_status.success(), "failed to pull MoltenVK from git");
             }
         } else if MOLTEN_VK_LOCAL.is_none() {
-            let branch = format!("v{}", MOLTEN_VK_VERSION.to_owned());
+            let branch = format!("v{MOLTEN_VK_VERSION}");
             let clone_args = if MOLTEN_VK_PATCH.is_none() {
                 vec!["--branch", branch.as_str(), "--depth", "1"]
             } else {
@@ -172,10 +98,8 @@ mod mac {
                 .args(clone_args)
                 .arg("https://github.com/KhronosGroup/MoltenVK.git")
                 .arg(&checkout_dir)
-                .spawn()
-                .expect("failed to spawn git")
-                .wait()
-                .expect("failed to clone MoltenVK");
+                .status()
+                .expect("failed to spawn git");
 
             assert!(git_status.success(), "failed to clone MoltenVK");
         }
@@ -196,31 +120,27 @@ mod mac {
             Ok(target) => match target.as_ref() {
                 "macos" => ("macos", "macOS"),
                 "ios" => ("ios", "iOS"),
-                target => panic!("unknown target '{}'", target),
+                target => panic!("unknown target '{target}'"),
             },
-            Err(e) => panic!("failed to determine target os '{}'", e),
+            Err(e) => panic!("failed to determine target os '{e}'"),
         };
 
         let status = Command::new("sh")
             .current_dir(&checkout_dir)
             .arg("fetchDependencies")
-            .arg(format!("--{}", target_name))
-            .spawn()
-            .expect("failed to spawn fetchDependencies")
-            .wait()
-            .expect("failed to fetchDependencies");
+            .arg(format!("--{target_name}"))
+            .status()
+            .expect("failed to spawn fetchDependencies");
 
         assert!(status.success(), "failed to fetchDependencies");
 
-        println!("running make in {:?}", checkout_dir);
+        println!("running make in {checkout_dir:?}");
 
         let status = Command::new("make")
             .current_dir(&checkout_dir)
             .arg(target_name)
-            .spawn()
-            .expect("failed to build MoltenVK")
-            .wait()
-            .expect("failed to build MoltenVK");
+            .status()
+            .expect("failed to run make");
 
         assert!(status.success(), "failed to build MoltenVK");
 
@@ -232,7 +152,7 @@ mod mac {
     pub(crate) fn download_prebuilt_molten<P: AsRef<Path>>(target_dir: &P) {
         use std::process::Command;
 
-        std::fs::create_dir_all(&target_dir).expect("Couldn't create directory");
+        std::fs::create_dir_all(target_dir).expect("Couldn't create directory");
 
         let download_url = format!(
             "https://github.com/EmbarkStudios/ash-molten/releases/download/MoltenVK-{}/MoltenVK.xcframework.zip",
@@ -241,14 +161,15 @@ mod mac {
         let download_path = target_dir.as_ref().join("MoltenVK.xcframework.zip");
 
         let curl_status = Command::new("curl")
-            .args(&["--location", "--silent", &download_url, "-o"])
+            .args(["--fail", "--location", "--silent", &download_url, "-o"])
             .arg(&download_path)
-            .spawn()
-            .expect("Couldn't launch curl")
-            .wait()
-            .expect("failed to wait on curl");
+            .status()
+            .expect("Couldn't launch curl");
 
-        assert!(curl_status.success());
+        assert!(
+            curl_status.success(),
+            "failed to download prebuilt libraries"
+        );
 
         let unzip_status = Command::new("unzip")
             .arg("-o")
@@ -257,26 +178,10 @@ mod mac {
             .arg("__MACOSX/*")
             .arg("-d")
             .arg(target_dir.as_ref())
-            .spawn()
-            .expect("Couldn't launch unzip")
-            .wait()
-            .expect("failed to wait on unzip");
+            .status()
+            .expect("Couldn't launch unzip");
 
-        if !unzip_status.success() {
-            let bytes = std::fs::read(download_path)
-                .expect("unzip failed, and further, could not open output zip file");
-            match std::str::from_utf8(&bytes) {
-                Ok(string) => {
-                    panic!(
-                        "Could not unzip MoltenVK.xcframework.zip. File was utf8, perhaps an error?\n{}",
-                        string
-                    );
-                }
-                Err(_) => {
-                    panic!("Could not unzip MoltenVK.xcframework.zip");
-                }
-            }
-        }
+        assert!(unzip_status.success(), "failed to run unzip");
     }
 }
 
@@ -285,14 +190,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[cfg(any(target_os = "macos", target_os = "ios"))]
 fn main() {
     use crate::mac::*;
     // The 'external' feature was not enabled. Molten will be built automatically.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT") && MOLTEN_VK_LOCAL.is_none();
 
-    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
     let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     assert!(
@@ -323,7 +226,7 @@ fn main() {
             let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
                 .join(format!("MoltenVK-{}", crate::mac::get_artifact_tag()));
             let _target_name = build_molten();
-            println!("Target dir was {:?}", target_dir);
+            println!("Target dir was {target_dir:?}");
 
             let mut pb = PathBuf::from(
                 std::env::var("CARGO_MANIFEST_DIR").expect("unable to find env:CARGO_MANIFEST_DIR"),
@@ -339,7 +242,7 @@ fn main() {
         };
 
         let xcframework = xcframework::XcFramework::parse(&project_dir)
-            .unwrap_or_else(|_| panic!("Failed to parse XCFramework from {:?}", project_dir));
+            .unwrap_or_else(|_| panic!("Failed to parse XCFramework from {project_dir:?}"));
         let native_libs = xcframework
             .AvailableLibraries
             .into_iter()
