@@ -17,14 +17,8 @@ mod mac {
 
     #[inline]
     fn iter_features() -> impl Iterator<Item = String> {
-        std::env::vars().filter_map(|(flag, _)| {
-            const NAME: &str = "CARGO_FEATURE_";
-            if let Some(feat) = flag.strip_prefix(NAME) {
-                Some(feat.to_owned())
-            } else {
-                None
-            }
-        })
+        std::env::vars()
+            .filter_map(|(flag, _)| flag.strip_prefix("CARGO_FEATURE_").map(String::from))
     }
 
     /// Each release by default uses a particular version of molten vk, but we
