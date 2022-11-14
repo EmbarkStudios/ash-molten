@@ -180,6 +180,19 @@ mod mac {
             .expect("Couldn't launch unzip");
 
         assert!(unzip_status.success(), "failed to run unzip");
+
+        if unzip_status.success() {
+            let bytes = std::fs::read(download_path)
+                .expect("unzip failed, and further, could not open downloaded zip file");
+            if let Ok(zip_text) = std::str::from_utf8(&bytes) {
+                panic!("Could not unzip MoltenVK.xcframework.zip. File was utf8, perhaps an error?\n{zip_text}");
+            } else {
+                panic!(
+                    "Could not unzip MoltenVK.xcframework.zip: {:?}",
+                    unzip_status.code()
+                );
+            }
+        }
     }
 }
 
