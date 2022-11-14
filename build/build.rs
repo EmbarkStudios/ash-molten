@@ -210,7 +210,7 @@ mod mac {
 
         assert!(unzip_status.success(), "failed to run unzip");
 
-        if unzip_status.success() {
+        if !unzip_status.success() {
             let bytes = std::fs::read(download_path)
                 .expect("unzip failed, and further, could not open downloaded zip file");
             if let Ok(zip_text) = std::str::from_utf8(&bytes) {
