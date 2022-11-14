@@ -1,8 +1,6 @@
 mod xcframework;
 
-#[cfg(any(target_os = "macos", target_os = "ios"))]
 mod mac {
-
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
@@ -192,6 +190,14 @@ use std::{
 
 fn main() {
     use crate::mac::*;
+
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+
+    if target_os != "macos" && target_os != "ios" {
+        eprintln!("ash-molten requires either 'macos' or 'ios' target");
+        return;
+    }
+
     // The 'external' feature was not enabled. Molten will be built automatically.
     let external_enabled = is_feature_enabled("EXTERNAL");
     let pre_built_enabled = is_feature_enabled("PRE_BUILT") && MOLTEN_VK_LOCAL.is_none();
@@ -273,9 +279,4 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=IOSurface");
     println!("cargo:rustc-link-lib=dylib=c++");
     println!("cargo:rustc-link-lib=static=MoltenVK");
-}
-
-#[cfg(not(any(target_os = "macos", target_os = "ios")))]
-fn main() {
-    eprintln!("ash-molten requires either 'macos' or 'ios' target");
 }
