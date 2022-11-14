@@ -15,29 +15,58 @@ mod mac {
     pub static MOLTEN_VK_LOCAL_BIN: Option<&str> = None; // for example, Some("/Users/my_user_name/VulkanSDK/1.3.211.0/MoltenVK")
     pub static MOLTEN_VK_LOCAL: Option<&str> = None; // for example, Some("/Users/my_user_name/dev/MoltenVK");
 
+    #[inline]
+    fn iter_features() -> impl Iterator<Item = String> {
+        std::env::vars().filter_map(|(flag, _)| {
+            const NAME: &str = "CARGO_FEATURE_";
+            if let Some(feat) = flag.strip_prefix(NAME) {
+                Some(feat.to_owned())
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Each release by default uses a particular version of molten vk, but we
+    /// also allow features to override that version.
+    ///
+    /// This is needed since the rust version may have features/fixes in a later
+    /// version, but the moltenvk version that it wants is older since a newer
+    /// version can be...broken. :p
+    fn get_version() -> String {
+        let feat_vers = iter_features().fold(None, |mut to_use, feat| {
+            if let Some(version) = feat.strip_prefix('V') {
+                let voverride = version.replace('_', ".");
+
+                if let Some(cur) = &to_use {
+                    panic!("cargo:warning={cur} is being overriden by {voverride}, please set only one `v<version>` feature");
+                }
+
+                to_use = Some(voverride);
+            }
+
+            to_use
+        });
+
+        feat_vers.unwrap_or_else(|| MOLTEN_VK_VERSION.to_owned())
+    }
+
     // Return the artifact tag in the form of "x.x.x" or if there is a patch specified "x.x.x#yyyyyyy"
     pub(crate) fn get_artifact_tag() -> String {
         if let Some(patch) = MOLTEN_VK_PATCH {
-            format!("{MOLTEN_VK_VERSION}#{patch}")
+            format!("{}#{patch}", get_version())
         } else {
-            MOLTEN_VK_VERSION.to_owned()
+            get_version()
         }
     }
 
     // Features are not used inside build scripts, so we have to explicitly query them from the
     // environment
     pub(crate) fn is_feature_enabled(feature: &str) -> bool {
-        std::env::vars()
-            .filter_map(|(flag, _)| {
-                const NAME: &str = "CARGO_FEATURE_";
-                if let Some(feat) = flag.strip_prefix(NAME) {
-                    println!("{feat:?}");
-                    Some(feat.to_owned())
-                } else {
-                    None
-                }
-            })
-            .any(|f| f == feature)
+        let mut cargo_feat = format!("CARGO_FEATURE_{}", feature.replace('-', "_"));
+        cargo_feat.make_ascii_uppercase();
+
+        std::env::var_os(&cargo_feat).is_some()
     }
 
     pub(crate) fn build_molten() -> &'static str {
@@ -85,11 +114,11 @@ mod mac {
                 assert!(git_status.success(), "failed to pull MoltenVK from git");
             }
         } else if MOLTEN_VK_LOCAL.is_none() {
-            let branch = format!("v{MOLTEN_VK_VERSION}");
+            let branch = format!("v{}", get_version());
             let clone_args = if MOLTEN_VK_PATCH.is_none() {
                 vec!["--branch", branch.as_str(), "--depth", "1"]
             } else {
-                vec!["--single-branch", "--branch", "master"] // Can't specify depth if you switch to a different commit hash later.
+                vec!["--single-branch", "--branch", "main"] // Can't specify depth if you switch to a different commit hash later.
             };
             let git_status = Command::new("git")
                 .arg("clone")
@@ -212,8 +241,8 @@ fn main() {
     }
 
     // The 'external' feature was not enabled. Molten will be built automatically.
-    let external_enabled = is_feature_enabled("EXTERNAL");
-    let pre_built_enabled = is_feature_enabled("PRE_BUILT") && MOLTEN_VK_LOCAL.is_none();
+    let external_enabled = is_feature_enabled("external");
+    let pre_built_enabled = is_feature_enabled("pre-built") && MOLTEN_VK_LOCAL.is_none();
 
     let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
