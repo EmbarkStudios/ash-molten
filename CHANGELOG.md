@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.14.0] - 2022-11-16
 ### Added
 - [PR#73](https://github.com/EmbarkStudios/ash-molten/pull/73) added the `v1_1_10` and `v1_1_5` features, enabling one of these features will download or compile that version of MoltenVK instead of the version that is hardcoded in the current build script. This can be useful if a newer version of this crate uses a newer version of MoltenVK, but you want to use an older version due to reasons such as bugs or other problems with the newer version.
 
@@ -45,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update to MoltenVK 1.1.0
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/cargo-deny/compare/v0.13.1+1.1.10...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/ash-molten/compare/0.14.0...HEAD
+[0.14.0]: https://github.com/EmbarkStudios/cargo-deny/compare/v0.13.1+1.1.10...0.14.0
 [0.13.1]: https://github.com/EmbarkStudios/cargo-deny/compare/v0.13.0+1.1.10...v0.13.1+1.1.10
 [0.13.0]: https://github.com/EmbarkStudios/cargo-deny/compare/v0.11.0+1.1.5...v0.13.0+1.1.10
 [0.11.0]: https://github.com/EmbarkStudios/cargo-deny/compare/v0.10.0...v0.11.0+1.1.5
