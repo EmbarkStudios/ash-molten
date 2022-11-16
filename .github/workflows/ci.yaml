@@ -4,6 +4,10 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 name: CI
 jobs:
   lint:
@@ -12,23 +16,22 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
+          components: "clippy, rustfmt"
+      - uses: Swatinem/rust-cache@v2
       # make sure all code has been formatted with rustfmt
-      - run: rustup component add rustfmt
       - run: cargo fmt --all -- --check --color always
       # run clippy to verify we have no warnings
-      - run: rustup component add clippy
       - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo clippy --features pre-built -- -D warnings
 
   cargo-deny:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - uses: EmbarkStudios/cargo-deny-action@v1
 
   test-source:
@@ -37,11 +40,9 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build
 
@@ -51,10 +52,8 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build --verbose --features pre-built
