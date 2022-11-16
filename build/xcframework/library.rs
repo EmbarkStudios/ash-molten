@@ -80,7 +80,7 @@ impl UniversalLibrary {
 
                 let mut out_path = xcframework_dir.join(new_identifier.clone());
                 std::fs::create_dir_all(&out_path)?;
-                out_path.push(&lib_path);
+                out_path.push(lib_path);
 
                 assert!(Command::new("lipo")
                     .arg(&full_path)
