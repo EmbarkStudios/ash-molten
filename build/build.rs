@@ -230,8 +230,7 @@ fn main() {
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
 
     if target_os != "macos" && target_os != "ios" {
-        eprintln!("ash-molten requires either 'macos' or 'ios' target");
-        return;
+        panic!("ash-molten requires either 'macos' or 'ios' target");
     }
 
     // The 'external' feature was not enabled. Molten will be built automatically.
