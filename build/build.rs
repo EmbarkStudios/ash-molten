@@ -33,7 +33,7 @@ mod mac {
                 let voverride = version.replace('_', ".");
 
                 if let Some(cur) = &to_use {
-                    panic!("cargo:warning={cur} is being overriden by {voverride}, please set only one `v<version>` feature");
+                    panic!("{cur} is being overriden by {voverride}, please set only one `v<version>` feature");
                 }
 
                 to_use = Some(voverride);
