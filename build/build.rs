@@ -4,7 +4,7 @@ mod mac {
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.1.10";
+    pub static MOLTEN_VK_VERSION: &str = "1.2.2";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
 
     // The next two are useful for different kinds of bisection to find bugs.
