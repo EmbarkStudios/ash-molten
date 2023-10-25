@@ -4,7 +4,7 @@ mod mac {
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.2.2";
+    pub static MOLTEN_VK_VERSION: &str = "1.2.6";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
 
     // The next two are useful for different kinds of bisection to find bugs.
@@ -195,8 +195,6 @@ mod mac {
         let unzip_status = Command::new("unzip")
             .arg("-o")
             .arg(&download_path)
-            .arg("-x")
-            .arg("__MACOSX/*")
             .arg("-d")
             .arg(target_dir.as_ref())
             .status()
