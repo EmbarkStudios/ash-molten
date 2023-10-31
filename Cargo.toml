@@ -1,16 +1,16 @@
 [package]
 name = "ash-molten"
 description = "Statically linked MoltenVK for Vulkan on Mac using Ash"
-version = "0.16.0+1.2.6"
+version = "0.17.0+1.2.6"
 authors = [
     "Embark <opensource@embark-studios.com>",
-    "Maik Klein <maik.klein@embark-studios.com>",
+    "Maik Klein <maik.klein@embark-studios.com>"
 ]
 edition = "2021"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-keywords = ["vulkan", "metal"]
-categories = ["api-bindings", "rendering", "os::macos-apis"]
+keywords = [ "vulkan", "metal" ]
+categories = [ "api-bindings", "rendering", "os::macos-apis" ]
 repository = "https://github.com/EmbarkStudios/ash-molten"
 homepage = "https://github.com/EmbarkStudios/ash-molten"
 documentation = "https://docs.rs/ash-molten"
@@ -23,23 +23,23 @@ build = "build/build.rs"
 #
 # NB: you must check that `ash-molten` compiles with every `ash` version
 # in this range, not just the start and the end, to be sure it's compatible.
-version = ">=0.35, <=0.37"
+version = ">=0.35, <=0.38"
 default-features = false
 
 [build-dependencies]
 anyhow = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = [ "derive" ] }
 plist = { version = "1.0" }
 
 [features]
 # Build features
 # Without build feature enabled MoltenVK will be build from source
-external = []  # Supply own MoltenVK lib
-pre-built = [] # Download pre-built MoltenVK from github release
+external = [  ]  # Supply own MoltenVK lib
+pre-built = [  ] # Download pre-built MoltenVK from github release
 
 # Optional versions to use instead of the default version
-v1_1_10 = []
-v1_1_5 = []
+v1_1_10 = [  ]
+v1_1_5 = [  ]
 
 [package.metadata.docs.rs]
 default-target = "x86_64-apple-darwin"
