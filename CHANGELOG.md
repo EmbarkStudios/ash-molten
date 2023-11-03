@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+
+## [0.17.0] - 2024-01-24
+### Changed
+- [PR#81](https://github.com/EmbarkStudios/ash-molten/pull/81) Upgrade MoltenVK to `1.2.7`
+
+## [0.16.0] - 2023-11-03
 ### Changed
 - [PR#76](https://github.com/EmbarkStudios/ash-molten/pull/76) Upgrade MoltenVK to `1.2.6`
 
@@ -53,7 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update to MoltenVK 1.1.0
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/ash-molten/compare/0.15.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/ash-molten/compare/0.17.0...HEAD
+[0.17.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.16.0...0.17.0
+[0.16.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.15.0...0.16.0
 [0.15.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.14.0...0.15.0
 [0.14.0]: https://github.com/EmbarkStudios/ash-molten/compare/v0.13.1+1.1.10...0.14.0
 [0.13.1]: https://github.com/EmbarkStudios/ash-molten/compare/v0.13.0+1.1.10...v0.13.1+1.1.10
