@@ -21,7 +21,7 @@
 
 `ash-molten` is built on top of [ash] and exposes a new entry point to statically link with [MoltenVK].
 
-Requires Xcode 12 and Mac OS 10.15 (Catalina) to compile.
+Requires Xcode 14 and Mac OS 10.15 (Catalina) to compile.
 
 ## Why?
 
