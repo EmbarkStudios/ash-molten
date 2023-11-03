@@ -42,6 +42,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - uses: Swatinem/rust-cache@v2
       - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build
@@ -54,6 +57,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - uses: Swatinem/rust-cache@v2
       - run: cargo fetch --target x86_64-apple-darwin
       - run: cargo build --verbose --features pre-built
