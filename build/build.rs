@@ -4,7 +4,7 @@ mod mac {
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.2.7";
+    pub static MOLTEN_VK_VERSION: &str = "1.2.8";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
 
     // The next two are useful for different kinds of bisection to find bugs.
@@ -275,7 +275,7 @@ fn main() {
             } else {
                 pb.push(target_dir);
             }
-            pb.push("Package/Latest/MoltenVK/MoltenVK.xcframework");
+            pb.push("Package/Latest/MoltenVK/static/MoltenVK.xcframework");
 
             pb
         };
