@@ -275,7 +275,7 @@ fn main() {
             } else {
                 pb.push(target_dir);
             }
-            pb.push("Package/Latest/MoltenVK/MoltenVK.xcframework");
+            pb.push("Package/Latest/MoltenVK/static/MoltenVK.xcframework");
 
             pb
         };
