@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.18.0] - 2024-03-19
+### Changed
+- [PR#82](https://github.com/EmbarkStudios/ash-molten/pull/82) Upgrade MoltenVK to `1.2.8`
+
 ## [0.17.0] - 2024-01-24
 ### Changed
 - [PR#81](https://github.com/EmbarkStudios/ash-molten/pull/81) Upgrade MoltenVK to `1.2.7`
