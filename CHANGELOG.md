@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update to MoltenVK 1.1.0
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/ash-molten/compare/0.18.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/ash-molten/compare/0.19.0...HEAD
 [0.19.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.18.0...0.19.0
 [0.18.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.17.0...0.18.0
 [0.17.0]: https://github.com/EmbarkStudios/ash-molten/compare/0.16.0...0.17.0
