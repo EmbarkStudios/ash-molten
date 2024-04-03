@@ -23,7 +23,7 @@ build = "build/build.rs"
 #
 # NB: you must check that `ash-molten` compiles with every `ash` version
 # in this range, not just the start and the end, to be sure it's compatible.
-version = ">=0.35, <=0.37"
+version = "0.38"
 default-features = false
 
 [build-dependencies]
