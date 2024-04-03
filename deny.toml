@@ -3,12 +3,6 @@ multiple-versions = "deny"
 deny = []
 skip = []
 
-[advisories]
-ignore = [
-    # Unmtaintained `safemem` dependency - only used by plist to build
-    "RUSTSEC-2023-0081",
-]
-
 [licenses]
 unlicensed = "deny"
 # We want really high confidence when inferring licenses from text
