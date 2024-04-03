@@ -16,7 +16,7 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: "clippy, rustfmt"
@@ -30,7 +30,7 @@ jobs:
   cargo-deny:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - uses: EmbarkStudios/cargo-deny-action@v1
 
@@ -40,9 +40,9 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - uses: Swatinem/rust-cache@v2
@@ -55,9 +55,9 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - uses: Swatinem/rust-cache@v2
