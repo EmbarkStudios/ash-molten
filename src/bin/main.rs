@@ -71,16 +71,15 @@
 #![allow(unsafe_code)]
 
 use ash::vk;
-use std::ffi::CString;
 fn main() {
     unsafe {
         let entry = ash_molten::load();
-        let app_name = CString::new("Hello Static Molten").unwrap();
+        let app_name = c"Hello Static Molten";
 
         let appinfo = vk::ApplicationInfo::default()
-            .application_name(&app_name)
+            .application_name(app_name)
             .application_version(0)
-            .engine_name(&app_name)
+            .engine_name(app_name)
             .engine_version(0)
             .api_version(vk::make_api_version(0, 1, 0, 0));
 
