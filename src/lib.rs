@@ -1,4 +1,4 @@
-use ash::{vk, Entry};
+use ash::vk;
 
 extern "system" {
     fn vkGetInstanceProcAddr(
@@ -8,12 +8,12 @@ extern "system" {
 }
 
 /// Fetches the function pointer to `vkGetInstanceProcAddr` which is statically linked.
-pub fn load() -> Entry {
-    let static_fn = vk::StaticFn {
+pub fn load() -> ash::Entry {
+    let static_fn = ash::StaticFn {
         get_instance_proc_addr: vkGetInstanceProcAddr,
     };
     #[allow(unsafe_code)]
     unsafe {
-        Entry::from_static_fn(static_fn)
+        ash::Entry::from_static_fn(static_fn)
     }
 }

@@ -77,16 +77,16 @@ fn main() {
         let entry = ash_molten::load();
         let app_name = CString::new("Hello Static Molten").unwrap();
 
-        let appinfo = vk::ApplicationInfo::builder()
+        let appinfo = vk::ApplicationInfo::default()
             .application_name(&app_name)
             .application_version(0)
             .engine_name(&app_name)
             .engine_version(0)
             .api_version(vk::make_api_version(0, 1, 0, 0));
 
-        let create_info = vk::InstanceCreateInfo::builder().application_info(&appinfo);
+        let create_info = vk::InstanceCreateInfo::default().application_info(&appinfo);
         let instance = entry.create_instance(&create_info, None).expect("Instance");
         let devices = instance.enumerate_physical_devices();
-        println!("{:?}", devices);
+        println!("Physical devices: {:?}", devices);
     }
 }
