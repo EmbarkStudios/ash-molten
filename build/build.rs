@@ -4,7 +4,7 @@ mod mac {
     use std::path::{Path, PathBuf};
 
     // MoltenVK git tagged release to use
-    pub static MOLTEN_VK_VERSION: &str = "1.2.8";
+    pub static MOLTEN_VK_VERSION: &str = "1.2.11-b1";
     pub static MOLTEN_VK_PATCH: Option<&str> = None;
 
     // The next two are useful for different kinds of bisection to find bugs.
@@ -189,7 +189,7 @@ mod mac {
 
         assert!(
             curl_status.success(),
-            "failed to download prebuilt libraries"
+            "failed to download prebuilt libraries from {:?}", download_url
         );
 
         let unzip_status = Command::new("unzip")
